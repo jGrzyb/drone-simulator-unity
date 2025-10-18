@@ -15,7 +15,7 @@ public class Drone : MonoBehaviour
     [SerializeField] float angleMult = 10.0f;
 
     Rigidbody rb;
-    Vector2 leftJoystick;
+    Vector2 leftJoystick; 
     Vector2 rightJoystick;
 
     void Awake()
@@ -27,9 +27,9 @@ public class Drone : MonoBehaviour
     {
         float force = gravity / (4 * Vector3.Dot(transform.up, Vector3.up));
 
-        Vector3 desiredDir = -rb.linearVelocity + transform.TransformDirection(rightJoystick.x, 0f, rightJoystick.y) * 4;
-        float zRad = (transform.rotation.eulerAngles.z + desiredDir.x * angleMult) * Mathf.Deg2Rad;
-        float xRad = (transform.rotation.eulerAngles.x - desiredDir.z * angleMult) * Mathf.Deg2Rad;
+        Vector3 desiredDir = transform.InverseTransformDirection(-rb.linearVelocity) + new Vector3(rightJoystick.x, 0f, rightJoystick.y) * 4;`
+        float zRad = (transform.eulerAngles.z + desiredDir.x * angleMult) * Mathf.Deg2Rad;
+        float xRad = (transform.eulerAngles.x - desiredDir.z * angleMult) * Mathf.Deg2Rad;
 
         float flf = force * (1.0f + Mathf.Sin(zRad)) * (1.0f + Mathf.Sin(xRad));
         float frf = force * (1.0f - Mathf.Sin(zRad)) * (1.0f + Mathf.Sin(xRad));
@@ -42,7 +42,7 @@ public class Drone : MonoBehaviour
         rb.AddForceAtPosition(transform.up * blf, transform.TransformPoint(blMotor));
         rb.AddForceAtPosition(transform.up * brf, transform.TransformPoint(brMotor));
 
-        Debug.DrawLine(transform.position, transform.position + desiredDir, Color.red);
+        Debug.DrawLine(transform.position, transform.position + transform.TransformDirection(desiredDir), Color.red);
         Debug.DrawLine(transform.TransformPoint(flMotor), transform.TransformPoint(flMotor) + transform.up * flf);
         Debug.DrawLine(transform.TransformPoint(frMotor), transform.TransformPoint(frMotor) + transform.up * frf);
         Debug.DrawLine(transform.TransformPoint(blMotor), transform.TransformPoint(blMotor) + transform.up * blf);

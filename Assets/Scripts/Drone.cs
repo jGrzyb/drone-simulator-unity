@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,47 +10,63 @@ public class Drone : MonoBehaviour {
     private Vector2 leftJoystick;
     private Vector2 rightJoystick;
 
-    private readonly float gravity = Physics.gravity.magnitude;
+    // private readonly float gravity = Physics.gravity.magnitude;
     private float mass = 0f;
 
     private Rigidbody rb;
 
-    private Rotor[] rotors;
-
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
-        rotors = GetComponentsInChildren<Rotor>();
-        mass = rb.mass + rotors.Sum(x => x.mass);
+        mass = rb.mass;
     }
 
     void FixedUpdate() {
+        Vector3 fRotorPos = new Vector3(0, 0, 1);
+        Vector3 rRotorPos = new Vector3(1, 0, 0);
+        Vector3 bRotorPos = new Vector3(0, 0, -1);
+        Vector3 lRotorPos = new Vector3(-1, 0, 0);
+        float kp = 1f;
+        float kd = 1f;
+        float ki = 0f;
 
-        var droneRotationY = Quaternion.Euler(0, transform.eulerAngles.y, 0);
-        Vector3 desiredDir = Quaternion.Inverse(droneRotationY) * -rb.linearVelocity + new Vector3(rightJoystick.x, leftJoystick.y, rightJoystick.y) * 4;
-        float zRad = (transform.eulerAngles.z + desiredDir.x * angleMult) * Mathf.Deg2Rad;
-        float xRad = (transform.eulerAngles.x - desiredDir.z * angleMult) * Mathf.Deg2Rad;
+        float thrustMultiplier = 1f;
+        float dragMultiplier = 1f;
 
-        float deviation = Vector3.Dot(transform.up, Vector3.up);
-        float thrustMultiplier = 1f + desiredDir.y;
-        float force = mass * gravity * thrustMultiplier / 4f;
-
-        float flf = force * (1.0f + Mathf.Sin(zRad)) * (1.0f + Mathf.Sin(xRad));
-        float frf = force * (1.0f - Mathf.Sin(zRad)) * (1.0f + Mathf.Sin(xRad));
-        float blf = force * (1.0f + Mathf.Sin(zRad)) * (1.0f - Mathf.Sin(xRad));
-        float brf = force * (1.0f - Mathf.Sin(zRad)) * (1.0f - Mathf.Sin(xRad));
+        float rotorDistance = fRotorPos.magnitude;
 
 
-        // rb.AddForceAtPosition(transform.up * flf, transform.TransformPoint(flMotor));
-        // rb.AddForceAtPosition(transform.up * frf, transform.TransformPoint(frMotor));
-        // rb.AddForceAtPosition(transform.up * blf, transform.TransformPoint(blMotor));
-        // rb.AddForceAtPosition(transform.up * brf, transform.TransformPoint(brMotor));
+        float zAngle = (transform.eulerAngles.z + 180f) % 360f - 180f;
+        float desiredRollRad = rightJoystick.x * 20f * Mathf.Deg2Rad;
+        float currentRollRad = zAngle * Mathf.Deg2Rad;
+        float rollRateRad = rb.angularVelocity.x;
 
-        // Debug.DrawLine(transform.position, transform.position + droneRotationY * desiredDir, Color.red);
-        // Debug.DrawLine(transform.TransformPoint(flMotor), transform.TransformPoint(flMotor) + transform.up * flf);
-        // Debug.DrawLine(transform.TransformPoint(frMotor), transform.TransformPoint(frMotor) + transform.up * frf);
-        // Debug.DrawLine(transform.TransformPoint(blMotor), transform.TransformPoint(blMotor) + transform.up * blf);
-        // Debug.DrawLine(transform.TransformPoint(brMotor), transform.TransformPoint(brMotor) + transform.up * brf);
+        float rollControl = kp * (desiredRollRad - currentRollRad) - kd * rollRateRad;
+
+
+
+        Matrix4x4 controlToRotor = new Matrix4x4(
+            new Vector4(1, 1, 1, 1),
+            new Vector4(0, rotorDistance, 0, -rotorDistance),
+            new Vector4(rotorDistance, 0, -rotorDistance, 0),
+            new Vector4(dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier)
+        ).transpose;
+
+        float upwardForce = mass * 9.81f;
+
+        Vector4 controlInput = new(upwardForce, rollControl, 0f, 0f);
+
+        Vector4 rotorForces = controlToRotor.inverse * controlInput;
+
+        rb.AddForceAtPosition(transform.up * rotorForces.x, transform.TransformPoint(fRotorPos));
+        rb.AddForceAtPosition(transform.up * rotorForces.y, transform.TransformPoint(rRotorPos));
+        rb.AddForceAtPosition(transform.up * rotorForces.z, transform.TransformPoint(bRotorPos));
+        rb.AddForceAtPosition(transform.up * rotorForces.w, transform.TransformPoint(lRotorPos));
+
+        Debug.DrawLine(transform.TransformPoint(fRotorPos), transform.TransformPoint(fRotorPos) + transform.up * rotorForces.x);
+        Debug.DrawLine(transform.TransformPoint(rRotorPos), transform.TransformPoint(rRotorPos) + transform.up * rotorForces.y);
+        Debug.DrawLine(transform.TransformPoint(bRotorPos), transform.TransformPoint(bRotorPos) + transform.up * rotorForces.z);
+        Debug.DrawLine(transform.TransformPoint(lRotorPos), transform.TransformPoint(lRotorPos) + transform.up * rotorForces.w);
     }
 
     public void Move(InputAction.CallbackContext context) {

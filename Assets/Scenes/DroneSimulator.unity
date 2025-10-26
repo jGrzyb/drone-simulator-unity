@@ -723,7 +723,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bee5ed5d4c02bfd3b367d3452832852, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Drone
-  angleMult: 10
+  maxTiltAngle: 20
+  kp: 5
+  kd: 1
+  ki: 1
+  thrustMultiplier: 1
+  dragMultiplier: 1
+  rotorDistance: 1
+  fRotorPos: {x: 0, y: 0, z: 1}
+  rRotorPos: {x: 1, y: 0, z: 0}
+  bRotorPos: {x: 0, y: 0, z: -1}
+  lRotorPos: {x: -1, y: 0, z: 0}
 --- !u!54 &1383642724
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -734,7 +744,7 @@ Rigidbody:
   serializedVersion: 5
   m_Mass: 1
   m_LinearDamping: 0
-  m_AngularDamping: 10
+  m_AngularDamping: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -749,7 +759,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 126
+  m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

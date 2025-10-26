@@ -23,16 +23,17 @@ public class Drone : MonoBehaviour {
     private float desiredRoll { get { return -rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad; } }
     private float desiredPitch { get { return rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad; } }
     private float desiredYaw { get { return leftJoystick.x * maxTiltAngle * Mathf.Deg2Rad; } }
+    private float desiredVerticalVelocity { get { return leftJoystick.y * Physics.gravity.magnitude / 2; } }
 
     private float currentRoll { get { return rollAngle * Mathf.Deg2Rad; } }
     private float currentPitch { get { return pitchAngle * Mathf.Deg2Rad; } }
     private float currentYaw { get { return yawAngle * Mathf.Deg2Rad; } }
 
-    private float rollRate { get { return rb.angularVelocity.z; } }
-    private float pitchRate { get { return rb.angularVelocity.x; } }
-    private float yawRate { get { return rb.angularVelocity.y; } }
-
-    private float upwardForce { get { return mass * Physics.gravity.magnitude; } }
+    Vector3 localAngularVelocity { get { return transform.InverseTransformDirection(rb.angularVelocity); } }
+    private float rollRate { get { return localAngularVelocity.z; } }
+    private float pitchRate { get { return localAngularVelocity.x; } }
+    private float yawRate { get { return localAngularVelocity.y; } }
+    private float currentVerticalVelocity { get { return rb.linearVelocity.y; } }
 
     private float mass { get { return rb?.mass ?? 0f; } }
 
@@ -57,6 +58,7 @@ public class Drone : MonoBehaviour {
         float rollControl = kp * (desiredRoll - currentRoll) - kd * rollRate;
         float pitchControl = kp * (desiredPitch - currentPitch) - kd * pitchRate;
         float yawControl = kp * (desiredYaw - currentYaw) - kd * yawRate;
+        float upwardForce = (kp * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
 
         Debug.Log($"{rb.angularVelocity.z}    {rollRate}    {rollControl}");
 

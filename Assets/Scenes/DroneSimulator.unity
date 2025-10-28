@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 41170909}
   - component: {fileID: 41170908}
   - component: {fileID: 41170911}
+  - component: {fileID: 41170912}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -256,6 +257,18 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &41170912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41170907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 097644e595e1623f0ab0c2bd2b95a8b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraRotate
 --- !u!1 &682548497
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,11 +742,10 @@ MonoBehaviour:
   ki: 1
   thrustMultiplier: 1
   dragMultiplier: 1
-  rotorDistance: 1
-  fRotorPos: {x: 0, y: 0, z: 1}
-  rRotorPos: {x: 1, y: 0, z: 0}
-  bRotorPos: {x: 0, y: 0, z: -1}
-  lRotorPos: {x: -1, y: 0, z: 0}
+  rotor1: {x: 0, y: 0, z: 1}
+  rotor2: {x: 1, y: 0, z: 0}
+  rotor3: {x: 0, y: 0, z: -1}
+  rotor4: {x: -1, y: 0, z: 0}
 --- !u!54 &1383642724
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -743,8 +755,8 @@ Rigidbody:
   m_GameObject: {fileID: 1383642717}
   serializedVersion: 5
   m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0
+  m_LinearDamping: 1
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7866631759392424145}
   - component: {fileID: 7971772982771575541}
   - component: {fileID: 1594574766978410896}
+  - component: {fileID: -2039008201066946281}
   m_Layer: 0
   m_Name: Rotor
   m_TagString: Untagged
@@ -179,3 +180,15 @@ HingeJoint:
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
+--- !u!114 &-2039008201066946281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1108812657949052426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d090c617cc379d2c921d841c4c793c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Rotor

@@ -132,6 +132,8 @@ GameObject:
   - component: {fileID: 41170908}
   - component: {fileID: 41170911}
   - component: {fileID: 41170912}
+  - component: {fileID: 41170914}
+  - component: {fileID: 41170913}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -269,7 +271,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 097644e595e1623f0ab0c2bd2b95a8b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraRotate
---- !u!1 &682548497
+--- !u!145 &41170913
+SpringJoint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41170907}
+  serializedVersion: 4
+  m_ConnectedBody: {fileID: 1383642724}
+  m_ConnectedArticulationBody: {fileID: 0}
+  m_Anchor: {x: 0, y: 0, z: 0}
+  m_AutoConfigureConnectedAnchor: 0
+  m_ConnectedAnchor: {x: 0, y: 30, z: 0}
+  m_Spring: 0.1
+  m_Damper: 0.2
+  m_MinDistance: 1
+  m_MaxDistance: 0
+  m_Tolerance: 1
+  m_BreakForce: Infinity
+  m_BreakTorque: Infinity
+  m_EnableCollision: 0
+  m_EnablePreprocessing: 1
+  m_MassScale: 1
+  m_ConnectedMassScale: 0.00001
+--- !u!54 &41170914
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41170907}
+  serializedVersion: 5
+  m_Mass: 0.1
+  m_LinearDamping: 1
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!1 &936542492
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -277,10 +330,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 682548501}
-  - component: {fileID: 682548500}
-  - component: {fileID: 682548499}
-  - component: {fileID: 682548498}
+  - component: {fileID: 936542496}
+  - component: {fileID: 936542495}
+  - component: {fileID: 936542494}
+  - component: {fileID: 936542493}
   m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
@@ -288,13 +341,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &682548498
+--- !u!64 &936542493
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682548497}
+  m_GameObject: {fileID: 936542492}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -310,13 +363,13 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &682548499
+--- !u!23 &936542494
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682548497}
+  m_GameObject: {fileID: 936542492}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -335,7 +388,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f5f5843bf5b6c5e89a7d20f2f22de6d5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -358,25 +411,25 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &682548500
+--- !u!33 &936542495
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682548497}
+  m_GameObject: {fileID: 936542492}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &682548501
+--- !u!4 &936542496
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682548497}
+  m_GameObject: {fileID: 936542492}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.41818, y: 0, z: 0.39948}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 100, y: 1, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -738,14 +791,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Drone
   maxTiltAngle: 20
   kp: 5
+  maxYawRate: 1
   kd: 1
   ki: 1
   thrustMultiplier: 1
   dragMultiplier: 1
-  rotor1: {x: 0, y: 0, z: 1}
-  rotor2: {x: 1, y: 0, z: 0}
-  rotor3: {x: 0, y: 0, z: -1}
-  rotor4: {x: -1, y: 0, z: 0}
+  rotorDistance: 0.5
+  isRotorInFront: 1
 --- !u!54 &1383642724
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -779,5 +831,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 981623438}
   - {fileID: 41170910}
-  - {fileID: 682548501}
   - {fileID: 1383642721}
+  - {fileID: 936542496}

@@ -17,6 +17,7 @@ public class Drone : MonoBehaviour {
     [SerializeField] private float rotorDistance = 0.5f;
     [SerializeField] private float maxRotorForce = 50.0f;
     [SerializeField] private bool isRotorInFront = true;
+    [SerializeField] private LineRenderer rotorLinePrefab;
 
 
     private float rollAngle { get { return (transform.eulerAngles.z + 180f) % 360f - 180f; } }
@@ -38,26 +39,35 @@ public class Drone : MonoBehaviour {
 
     private float mass { get { return rb?.mass ?? 0f; } }
 
+    private Vector3[] rotorPoses {
+        get {
+            float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
+            return Enumerable.Range(0, 4).Select(i =>
+                new Vector3(
+                    Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
+                    0f,
+                    Mathf.Sin(placementDegree + i * Mathf.PI / 2) * rotorDistance
+                )
+            ).ToArray();
+        }
+    }
+
+    private double[] rotorForcesArray = new double[4];
+
     private Vector2 leftJoystick;
     private Vector2 rightJoystick;
 
     private Rigidbody rb;
+    LineRenderer[] rotorLines;
+    LineRenderer posLine;
 
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
+        rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
 
     void FixedUpdate() {
-        float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
-        Vector3[] rotorPoses = Enumerable.Range(0, 4).Select(i =>
-            new Vector3(
-                Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
-                0f,
-                Mathf.Sin(placementDegree + i * Mathf.PI / 2) * rotorDistance
-            )
-        ).ToArray();
-
         double[,] controlToRotorArray = new double[4, 4] {
             {1, 1, 1, 1},
             {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
@@ -91,14 +101,12 @@ public class Drone : MonoBehaviour {
         }
         var solver = new GoldfarbIdnani(qof, cons.ToArray());
         solver.Minimize();
-        double[] rotorForcesArray = solver.Solution;
+        rotorForcesArray = solver.Solution;
 
         for (int i = 0; i < 4; i++) {
             rb.AddForceAtPosition(transform.up * (float)rotorForcesArray[i], transform.TransformPoint(rotorPoses[i]));
             rb.AddForceAtPosition(transform.forward * (float)rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
             rb.AddForceAtPosition(-transform.forward * (float)rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
-
-            Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + transform.up * (float)rotorForcesArray[i]);
         }
     }
 
@@ -108,5 +116,13 @@ public class Drone : MonoBehaviour {
 
     public void Look(InputAction.CallbackContext context) {
         rightJoystick = context.ReadValue<Vector2>();
+    }
+
+    void Update() {
+        for (int i = 0; i < 4; i++) {
+            rotorLines[i].SetPosition(0, transform.TransformPoint(rotorPoses[i]));
+            rotorLines[i].SetPosition(1, transform.TransformPoint(rotorPoses[i] + Vector3.up * (float)rotorForcesArray[i] * 5f));
+            Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + transform.up * (float)rotorForcesArray[i]);
+        }
     }
 }

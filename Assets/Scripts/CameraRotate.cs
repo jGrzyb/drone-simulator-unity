@@ -6,6 +6,7 @@ public class CameraRotate : MonoBehaviour
     void Awake()
     {
         drone = FindFirstObjectByType<Drone>();
+        GetComponent<SpringJoint>().connectedBody = drone.GetComponent<Rigidbody>();
     }
 
     void Update()

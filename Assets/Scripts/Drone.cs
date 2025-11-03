@@ -7,26 +7,40 @@ using Accord.Math.Optimization;
 using Vector3 = UnityEngine.Vector3;
 
 public class Drone : MonoBehaviour {
-    [SerializeField] private float maxTiltAngle = 20f;
-    [SerializeField] private float kp = 1f;
-    [SerializeField] private float maxYawRate = 1f;
-    [SerializeField] private float kd = 1f;
-    [SerializeField] private float ki = 1f;
+    [SerializeField] private float maxTiltAngle = 30f;
+    [SerializeField] private float tiltGain = 5f;
+    [SerializeField] private float tiltDamping = 1f;
+
+    [Space]
+    [SerializeField] private float maxYawRate = 2f;
+    [SerializeField] private float yawGain = 5f;
+
+    [Space]
+    [SerializeField] private float maxVerticalVelocity = 5f;
+    [SerializeField] private float verticalGain = 1f;
+    
+    [Space]
     [SerializeField] private float thrustMultiplier = 1f;
     [SerializeField] private float dragMultiplier = 1f;
+
+    [Space]
     [SerializeField] private float rotorDistance = 0.5f;
-    [SerializeField] private float maxRotorForce = 50.0f;
+    [SerializeField] private float maxRotorForce = 10.0f;
+
+    [Space]
     [SerializeField] private bool isRotorInFront = true;
+
+    [Space]
     [SerializeField] private LineRenderer rotorLinePrefab;
 
 
-    private float rollAngle { get { return (transform.eulerAngles.z + 180f) % 360f - 180f; } }
-    private float pitchAngle { get { return (transform.eulerAngles.x + 180f) % 360f - 180f; } }
+    private float rollAngle { get { return Mathf.DeltaAngle(0f, transform.eulerAngles.z); } }
+    private float pitchAngle { get { return Mathf.DeltaAngle(0f, transform.eulerAngles.x); } }
 
     private float desiredRoll { get { return -rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad; } }
     private float desiredPitch { get { return rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad; } }
     private float desiredYawVelocity { get { return leftJoystick.x * maxYawRate * Mathf.Deg2Rad; } }
-    private float desiredVerticalVelocity { get { return leftJoystick.y * Physics.gravity.magnitude / 2; } }
+    private float desiredVerticalVelocity { get { return leftJoystick.y * maxVerticalVelocity; } }
 
     private float currentRoll { get { return rollAngle * Mathf.Deg2Rad; } }
     private float currentPitch { get { return pitchAngle * Mathf.Deg2Rad; } }
@@ -75,10 +89,10 @@ public class Drone : MonoBehaviour {
             {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
         };
 
-        float rollControl = kp * (desiredRoll - currentRoll) - kd * rollRate;
-        float pitchControl = kp * (desiredPitch - currentPitch) - kd * pitchRate;
-        float yawControl = 40 * kp * (desiredYawVelocity - currentYawVelocity);
-        float upwardForce = (kp * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
+        float rollControl = tiltGain * (desiredRoll - currentRoll) - tiltDamping * rollRate;
+        float pitchControl = tiltGain * (desiredPitch - currentPitch) - tiltDamping * pitchRate;
+        float yawControl = 40 * yawGain * (desiredYawVelocity - currentYawVelocity);
+        float upwardForce = Mathf.Clamp((verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up), 0, 4 * maxRotorForce);
 
 
         double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };

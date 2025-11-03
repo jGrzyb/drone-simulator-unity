@@ -279,7 +279,7 @@ SpringJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 41170907}
   serializedVersion: 4
-  m_ConnectedBody: {fileID: 2061040942}
+  m_ConnectedBody: {fileID: 0}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 0
@@ -561,7 +561,7 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1001 &1445897844
+--- !u!1001 &1445180603
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -569,25 +569,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 7051035260570576926, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
-      propertyPath: m_ImplicitCom
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7985434328639754853, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
       propertyPath: m_Name
       value: Drone
       objectReference: {fileID: 0}
     - target: {fileID: 8479557975745004221, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 2.09964
       objectReference: {fileID: 0}
     - target: {fileID: 8479557975745004221, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2
+      value: 2.11105
       objectReference: {fileID: 0}
     - target: {fileID: 8479557975745004221, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1.88968
       objectReference: {fileID: 0}
     - target: {fileID: 8479557975745004221, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
       propertyPath: m_LocalRotation.w
@@ -622,11 +618,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
---- !u!54 &2061040942 stripped
-Rigidbody:
-  m_CorrespondingSourceObject: {fileID: 7051035260570576926, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
-  m_PrefabInstance: {fileID: 1445897844}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -634,4 +625,4 @@ SceneRoots:
   - {fileID: 981623438}
   - {fileID: 41170910}
   - {fileID: 936542496}
-  - {fileID: 1445897844}
+  - {fileID: 1445180603}

@@ -247,7 +247,7 @@ Rigidbody:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 1
+  m_ImplicitCom: 0
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
@@ -368,15 +368,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bee5ed5d4c02bfd3b367d3452832852, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Drone
-  maxTiltAngle: 40
-  kp: 10
+  maxTiltAngle: 30
+  tiltGain: 5
+  tiltDamping: 1
   maxYawRate: 2
-  kd: 2
-  ki: 1
+  yawGain: 5
+  maxVerticalVelocity: 5
+  verticalGain: 1
   thrustMultiplier: 1
   dragMultiplier: 1
   rotorDistance: 0.5
-  maxRotorForce: 100
+  maxRotorForce: 10
   isRotorInFront: 1
   rotorLinePrefab: {fileID: 7218557307555830096, guid: 8dd64752c66ba0af2b446b9f554d4745, type: 3}
 --- !u!96 &7338125210091992842

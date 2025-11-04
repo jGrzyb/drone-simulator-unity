@@ -379,6 +379,7 @@ MonoBehaviour:
   dragMultiplier: 1
   rotorDistance: 0.5
   maxRotorForce: 10
+  maxRotorDelta: 0.5
   isRotorInFront: 1
   rotorLinePrefab: {fileID: 7218557307555830096, guid: 8dd64752c66ba0af2b446b9f554d4745, type: 3}
 --- !u!96 &7338125210091992842

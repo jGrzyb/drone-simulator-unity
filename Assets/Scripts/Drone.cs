@@ -25,17 +25,25 @@ public class Drone : MonoBehaviour {
 
     [Space]
     [SerializeField] private float rotorDistance = 0.5f;
+    [SerializeField] private bool isRotorInFront = true;
+
+    [Space]
+    [SerializeField] private bool isRotorContrained = true;
     [SerializeField] private float maxRotorForce = 10.0f;
 
     [Space]
-    [SerializeField] private bool isRotorInFront = true;
+    [SerializeField] private bool isFluentRotor = true;
+    [SerializeField] private float maxRotorDelta = 0.5f;
+
+    [Space]
+    [SerializeField] private bool isSupportOn = true;
 
     [Space]
     [SerializeField] private LineRenderer rotorLinePrefab;
 
 
-    private float rollAngle { get { return Mathf.DeltaAngle(0f, transform.eulerAngles.z); } }
-    private float pitchAngle { get { return Mathf.DeltaAngle(0f, transform.eulerAngles.x); } }
+    private float rollAngle { get { return Mathf.DeltaAngle(0f, rb.rotation.eulerAngles.z); } }
+    private float pitchAngle { get { return Mathf.DeltaAngle(0f, rb.rotation.eulerAngles.x); } }
 
     private float desiredRoll { get { return -rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad; } }
     private float desiredPitch { get { return rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad; } }
@@ -66,15 +74,13 @@ public class Drone : MonoBehaviour {
         }
     }
 
-    private double[] rotorForcesArray = new double[4];
+    private float[] rotorForcesArray = new float[4];
 
     private Vector2 leftJoystick;
     private Vector2 rightJoystick;
 
     private Rigidbody rb;
-    LineRenderer[] rotorLines;
-    LineRenderer posLine;
-
+    private LineRenderer[] rotorLines;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
@@ -82,8 +88,9 @@ public class Drone : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        double[,] controlToRotorArray = new double[4, 4] {
-            {1, 1, 1, 1},
+        Debug.Log($"Roll: {rollAngle}, Pitch: {pitchAngle}, Yaw: {transform.eulerAngles.y}");
+        double[,] controlToRotorMatrix = new double[4, 4] {
+            {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
             {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
             {-rotorPoses[0].z, -rotorPoses[1].z, -rotorPoses[2].z, -rotorPoses[3].z},
             {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
@@ -92,35 +99,52 @@ public class Drone : MonoBehaviour {
         float rollControl = tiltGain * (desiredRoll - currentRoll) - tiltDamping * rollRate;
         float pitchControl = tiltGain * (desiredPitch - currentPitch) - tiltDamping * pitchRate;
         float yawControl = 40 * yawGain * (desiredYawVelocity - currentYawVelocity);
+
+
+        float[] solution;
+        if (isRotorContrained) {
         float upwardForce = Mathf.Clamp((verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up), 0, 4 * maxRotorForce);
-
-
         double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
-        double[,] H = Matrix.Dot(controlToRotorArray.Transpose(), controlToRotorArray).Multiply(2);
-        double[] f = Matrix.Dot(controlToRotorArray.Transpose(), controlInputArray).Multiply(-2);
-        QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, f);
-        var cons = new System.Collections.Generic.List<LinearConstraint>();
-        for (int i = 0; i < 4; i++) {
-            var coeff = new double[4]; coeff[i] = 1.0;
-            cons.Add(new LinearConstraint(4) {
-                CombinedAs = coeff,
-                ShouldBe = ConstraintType.GreaterThanOrEqualTo,
-                Value = 0.0
-            });
-            cons.Add(new LinearConstraint(4) {
-                CombinedAs = coeff,
-                ShouldBe = ConstraintType.LesserThanOrEqualTo,
-                Value = maxRotorForce
-            });
+            double[,] H = Matrix.Dot(controlToRotorMatrix.Transpose(), controlToRotorMatrix).Multiply(2);
+            double[] f = Matrix.Dot(controlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);
+            QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, f);
+            var cons = new System.Collections.Generic.List<LinearConstraint>();
+            for (int i = 0; i < 4; i++) {
+                var coeff = new double[4]; coeff[i] = 1.0;
+                cons.Add(new LinearConstraint(4) {
+                    CombinedAs = coeff,
+                    ShouldBe = ConstraintType.GreaterThanOrEqualTo,
+                    Value = 0.0
+                });
+                cons.Add(new LinearConstraint(4) {
+                    CombinedAs = coeff,
+                    ShouldBe = ConstraintType.LesserThanOrEqualTo,
+                    Value = maxRotorForce
+                });
+            }
+            var solver = new GoldfarbIdnani(qof, cons.ToArray());
+            solver.Minimize();
+            solution = solver.Solution.Select(x => (float)x).ToArray();
         }
-        var solver = new GoldfarbIdnani(qof, cons.ToArray());
-        solver.Minimize();
-        rotorForcesArray = solver.Solution;
+        else {
+            float upwardForce = (verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
+            double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
+            solution = Matrix.Solve(controlToRotorMatrix, controlInputArray).Select(x => (float)x).ToArray();
+        }
+        
+        if (isFluentRotor) {
+            for(int i=0; i<4; i++) {
+                rotorForcesArray[i] = Mathf.MoveTowards(rotorForcesArray[i], solution[i], maxRotorDelta);
+            }
+        }
+        else {
+            rotorForcesArray = solution;
+        }
 
         for (int i = 0; i < 4; i++) {
-            rb.AddForceAtPosition(transform.up * (float)rotorForcesArray[i], transform.TransformPoint(rotorPoses[i]));
-            rb.AddForceAtPosition(transform.forward * (float)rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
-            rb.AddForceAtPosition(-transform.forward * (float)rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(transform.up * rotorForcesArray[i], transform.TransformPoint(rotorPoses[i]));
+            rb.AddForceAtPosition(transform.forward * rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(-transform.forward * rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
     }
 
@@ -135,8 +159,9 @@ public class Drone : MonoBehaviour {
     void Update() {
         for (int i = 0; i < 4; i++) {
             rotorLines[i].SetPosition(0, transform.TransformPoint(rotorPoses[i]));
-            rotorLines[i].SetPosition(1, transform.TransformPoint(rotorPoses[i] + Vector3.up * (float)rotorForcesArray[i] * 5f));
-            Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + transform.up * (float)rotorForcesArray[i]);
+            rotorLines[i].SetPosition(1, transform.TransformPoint(rotorPoses[i] + Vector3.up * rotorForcesArray[i] * 5f));
+            Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + transform.up * rotorForcesArray[i]);
         }
+        Debug.DrawLine(transform.position, transform.position + transform.forward * 3);
     }
 }

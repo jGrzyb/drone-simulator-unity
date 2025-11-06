@@ -18,7 +18,7 @@ public class Drone : MonoBehaviour {
     [Space]
     [SerializeField] private float maxVerticalVelocity = 5f;
     [SerializeField] private float verticalGain = 1f;
-    
+
     [Space]
     [SerializeField] private float thrustMultiplier = 1f;
     [SerializeField] private float dragMultiplier = 1f;
@@ -99,12 +99,13 @@ public class Drone : MonoBehaviour {
         float rollControl = tiltGain * (desiredRoll - currentRoll) - tiltDamping * rollRate;
         float pitchControl = tiltGain * (desiredPitch - currentPitch) - tiltDamping * pitchRate;
         float yawControl = 40 * yawGain * (desiredYawVelocity - currentYawVelocity);
+        float upwardForce = (verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
 
 
         float[] solution;
         if (isRotorContrained) {
-        float upwardForce = Mathf.Clamp((verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up), 0, 4 * maxRotorForce);
-        double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
+            upwardForce = Mathf.Clamp(upwardForce, 0, 4 * maxRotorForce);
+            double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
             double[,] H = Matrix.Dot(controlToRotorMatrix.Transpose(), controlToRotorMatrix).Multiply(2);
             double[] f = Matrix.Dot(controlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);
             QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, f);
@@ -125,19 +126,16 @@ public class Drone : MonoBehaviour {
             var solver = new GoldfarbIdnani(qof, cons.ToArray());
             solver.Minimize();
             solution = solver.Solution.Select(x => (float)x).ToArray();
-        }
-        else {
-            float upwardForce = (verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
+        } else {
             double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
             solution = Matrix.Solve(controlToRotorMatrix, controlInputArray).Select(x => (float)x).ToArray();
         }
-        
+
         if (isFluentRotor) {
-            for(int i=0; i<4; i++) {
+            for (int i = 0; i < 4; i++) {
                 rotorForcesArray[i] = Mathf.MoveTowards(rotorForcesArray[i], solution[i], maxRotorDelta);
             }
-        }
-        else {
+        } else {
             rotorForcesArray = solution;
         }
 

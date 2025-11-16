@@ -47,7 +47,7 @@ public class Drone : MonoBehaviour {
     [SerializeField] private float rotorRadius = 0.2f;
 
     [Space]
-    [SerializeField] private bool doesVelocityInfluenceThrust = true;
+    [SerializeField] private bool doesVelocityInfluenceThrust = false;
     [Space]
     [SerializeField] private LineRenderer rotorLinePrefab;
 
@@ -165,9 +165,10 @@ public class Drone : MonoBehaviour {
             rotorForcesArray = solution;
         }
 
+        float[] trueRotorForces = new float[4];
         if (isGroudEffectOn) {
             for (int i = 0; i < 4; i++) {
-                rotorForcesArray[i] *= 1f + 6f * Mathf.Exp(-Mathf.Clamp(transform.position.y, 0, float.MaxValue) * 5f / rotorRadius);
+                trueRotorForces[i] = rotorForcesArray[i] *(1f + 6f * Mathf.Exp(-Mathf.Max(transform.position.y, 0) * 5f / rotorRadius));
             }
         }
 
@@ -177,17 +178,16 @@ public class Drone : MonoBehaviour {
                 Vector3 lpv = transform.InverseTransformDirection(pv);
                 // Debug.Log($"Rotor {i} local vertical velocity: {lpv}");
                 float rotorLocalVerticalVelocity = lpv.y;
-                rotorForcesArray[i] *= 1f - rotorLocalVerticalVelocity / Mathf.Clamp(Mathf.Sqrt(Mathf.Abs(rotorForcesArray[i])), 0.1f, float.MaxValue);
-                // rotorForcesArray[i] *= Mathf.Clamp01(1f - rotorLocalVerticalVelocity / 10f);
+                trueRotorForces[i] *= 1f - rotorLocalVerticalVelocity / Mathf.Max(Mathf.Sqrt(Mathf.Abs(trueRotorForces[i])), 0.1f);
                 Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + pv, Color.red);
             }
         }
 
         for (int i = 0; i < 4; i++) {
             float randomNoise = 1; // UnityEngine.Random.Range(0.9f, 1.1f);
-            rb.AddForceAtPosition(transform.up * rotorForcesArray[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
-            rb.AddForceAtPosition(transform.forward * rotorForcesArray[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
-            rb.AddForceAtPosition(-transform.forward * rotorForcesArray[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(transform.up * trueRotorForces[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
+            rb.AddForceAtPosition(transform.forward * trueRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(-transform.forward * trueRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
     }
 

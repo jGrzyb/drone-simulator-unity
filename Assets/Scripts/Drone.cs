@@ -5,7 +5,9 @@ using Accord.Math;
 using Accord.Math.Optimization;
 
 using Vector3 = UnityEngine.Vector3;
+using System;
 
+[RequireComponent(typeof(Rigidbody))]
 public class Drone : MonoBehaviour {
     [SerializeField] private float maxTiltAngle = 30f;
     [SerializeField] private float tiltGain = 5f;
@@ -22,6 +24,7 @@ public class Drone : MonoBehaviour {
     [Space]
     [SerializeField] private float thrustMultiplier = 1f;
     [SerializeField] private float dragMultiplier = 1f;
+    [SerializeField] private float airResistanceCoefficient = 1f;
 
     [Space]
     [SerializeField] private float rotorDistance = 0.5f;
@@ -37,7 +40,14 @@ public class Drone : MonoBehaviour {
 
     [Space]
     [SerializeField] private bool isSupportOn = true;
+    [SerializeField] private float supportGain = 0.5f;
 
+    [Space]
+    [SerializeField] private bool isGroudEffectOn = true;
+    [SerializeField] private float rotorRadius = 0.2f;
+
+    [Space]
+    [SerializeField] private bool doesVelocityInfluenceThrust = true;
     [Space]
     [SerializeField] private LineRenderer rotorLinePrefab;
 
@@ -45,16 +55,12 @@ public class Drone : MonoBehaviour {
     private float rollAngle { get { return Mathf.DeltaAngle(0f, rb.rotation.eulerAngles.z); } }
     private float pitchAngle { get { return Mathf.DeltaAngle(0f, rb.rotation.eulerAngles.x); } }
 
-    private float desiredRoll { get { return -rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad; } }
-    private float desiredPitch { get { return rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad; } }
-    private float desiredYawVelocity { get { return leftJoystick.x * maxYawRate * Mathf.Deg2Rad; } }
-    private float desiredVerticalVelocity { get { return leftJoystick.y * maxVerticalVelocity; } }
-
     private float currentRoll { get { return rollAngle * Mathf.Deg2Rad; } }
     private float currentPitch { get { return pitchAngle * Mathf.Deg2Rad; } }
     private float currentYawVelocity { get { return rb.angularVelocity.y * Mathf.Deg2Rad; } }
     private float currentVerticalVelocity { get { return rb.linearVelocity.y; } }
 
+    private Vector3 localLinearVelocity { get { return Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * rb.linearVelocity; } }
     private Vector3 localAngularVelocity { get { return transform.InverseTransformDirection(rb.angularVelocity); } }
     private float rollRate { get { return localAngularVelocity.z; } }
     private float pitchRate { get { return localAngularVelocity.x; } }
@@ -84,17 +90,37 @@ public class Drone : MonoBehaviour {
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
+        rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
 
     void FixedUpdate() {
-        Debug.Log($"Roll: {rollAngle}, Pitch: {pitchAngle}, Yaw: {transform.eulerAngles.y}");
+        rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient * Time.fixedDeltaTime);
+        // Debug.Log($"Roll: {rollAngle}, Pitch: {pitchAngle}, Yaw: {transform.eulerAngles.y}");
         double[,] controlToRotorMatrix = new double[4, 4] {
             {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
             {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
             {-rotorPoses[0].z, -rotorPoses[1].z, -rotorPoses[2].z, -rotorPoses[3].z},
             {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
         };
+
+        float desiredRoll;
+        float desiredPitch;
+
+        // Debug.Log($"{rightJoystick.x} {rightJoystick.y} X: {desiredRightVelocity:F2}, Z: {desiredForwardVelocity:F2}");
+        if (isSupportOn && rightJoystick.magnitude < 0.1f) {
+            float desiredRightVelocity = -localLinearVelocity.x;
+            float desiredForwardVelocity = -localLinearVelocity.z;
+
+            desiredRoll = Mathf.Atan(-desiredRightVelocity * supportGain) / (Mathf.PI / 2) * maxTiltAngle * Mathf.Deg2Rad;
+            desiredPitch = Mathf.Atan(desiredForwardVelocity * supportGain) / (Mathf.PI / 2) * maxTiltAngle * Mathf.Deg2Rad;
+        } else {
+            desiredRoll = -rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad;
+            desiredPitch = rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad;
+        }
+
+        float desiredYawVelocity = leftJoystick.x * maxYawRate * Mathf.Deg2Rad;
+        float desiredVerticalVelocity = leftJoystick.y * maxVerticalVelocity;
 
         float rollControl = tiltGain * (desiredRoll - currentRoll) - tiltDamping * rollRate;
         float pitchControl = tiltGain * (desiredPitch - currentPitch) - tiltDamping * pitchRate;
@@ -139,10 +165,29 @@ public class Drone : MonoBehaviour {
             rotorForcesArray = solution;
         }
 
+        if (isGroudEffectOn) {
+            for (int i = 0; i < 4; i++) {
+                rotorForcesArray[i] *= 1f + 6f * Mathf.Exp(-Mathf.Clamp(transform.position.y, 0, float.MaxValue) * 5f / rotorRadius);
+            }
+        }
+
+        if (doesVelocityInfluenceThrust) {
+            for (int i = 0; i < 4; i++) {
+                Vector3 pv = rb.GetPointVelocity(transform.TransformPoint(rotorPoses[i]));
+                Vector3 lpv = transform.InverseTransformDirection(pv);
+                // Debug.Log($"Rotor {i} local vertical velocity: {lpv}");
+                float rotorLocalVerticalVelocity = lpv.y;
+                rotorForcesArray[i] *= 1f - rotorLocalVerticalVelocity / Mathf.Clamp(Mathf.Sqrt(Mathf.Abs(rotorForcesArray[i])), 0.1f, float.MaxValue);
+                // rotorForcesArray[i] *= Mathf.Clamp01(1f - rotorLocalVerticalVelocity / 10f);
+                Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + pv, Color.red);
+            }
+        }
+
         for (int i = 0; i < 4; i++) {
-            rb.AddForceAtPosition(transform.up * rotorForcesArray[i], transform.TransformPoint(rotorPoses[i]));
-            rb.AddForceAtPosition(transform.forward * rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
-            rb.AddForceAtPosition(-transform.forward * rotorForcesArray[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            float randomNoise = 1; // UnityEngine.Random.Range(0.9f, 1.1f);
+            rb.AddForceAtPosition(transform.up * rotorForcesArray[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
+            rb.AddForceAtPosition(transform.forward * rotorForcesArray[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(-transform.forward * rotorForcesArray[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
     }
 
@@ -158,8 +203,6 @@ public class Drone : MonoBehaviour {
         for (int i = 0; i < 4; i++) {
             rotorLines[i].SetPosition(0, transform.TransformPoint(rotorPoses[i]));
             rotorLines[i].SetPosition(1, transform.TransformPoint(rotorPoses[i] + Vector3.up * rotorForcesArray[i] * 5f));
-            Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + transform.up * rotorForcesArray[i]);
         }
-        Debug.DrawLine(transform.position, transform.position + transform.forward * 3);
     }
 }

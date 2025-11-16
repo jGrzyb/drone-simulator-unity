@@ -569,8 +569,28 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5252597021492350516, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6365815623437740120, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
+      propertyPath: supportGain
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6365815623437740120, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
+      propertyPath: airResistanceCoefficient
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6365815623437740120, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
+      propertyPath: doesVelocityInfluenceThrust
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7051035260570576926, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
       propertyPath: m_Constraints
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7051035260570576926, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}
+      propertyPath: m_LinearDamping
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7985434328639754853, guid: e26cd8dd5f52ddd4f97f406f487cb522, type: 3}

@@ -8,6 +8,8 @@ using Vector3 = UnityEngine.Vector3;
 using System;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(KalmanFilter))]
 public class Drone : MonoBehaviour {
     [SerializeField] private float maxTiltAngle = 30f;
     [SerializeField] private float tiltGain = 5f;
@@ -52,18 +54,14 @@ public class Drone : MonoBehaviour {
     [SerializeField] private LineRenderer rotorLinePrefab;
 
 
-    private float rollAngle { get { return Mathf.DeltaAngle(0f, rb.rotation.eulerAngles.z); } }
-    private float pitchAngle { get { return Mathf.DeltaAngle(0f, rb.rotation.eulerAngles.x); } }
-
-    private float currentRoll { get { return rollAngle * Mathf.Deg2Rad; } }
-    private float currentPitch { get { return pitchAngle * Mathf.Deg2Rad; } }
-    private float currentYawVelocity { get { return rb.angularVelocity.y * Mathf.Deg2Rad; } }
+    private float currentRoll { get { return -kalmanFilter.GetRollAngle() * Mathf.Deg2Rad; } }
+    private float currentPitch { get { return kalmanFilter.GetPitchAngle() * Mathf.Deg2Rad; } }
+    private float currentYawVelocity { get { return transform.InverseTransformDirection(rb.angularVelocity).y * Mathf.Deg2Rad; } }
     private float currentVerticalVelocity { get { return rb.linearVelocity.y; } }
 
     private Vector3 localLinearVelocity { get { return Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * rb.linearVelocity; } }
-    private Vector3 localAngularVelocity { get { return transform.InverseTransformDirection(rb.angularVelocity); } }
-    private float rollRate { get { return localAngularVelocity.z; } }
-    private float pitchRate { get { return localAngularVelocity.x; } }
+    private float rollRate { get { return -kalmanFilter.GetRollRate() * Mathf.Deg2Rad; } }
+    private float pitchRate { get { return kalmanFilter.GetPitchRate() * Mathf.Deg2Rad; } }
 
     private float mass { get { return rb?.mass ?? 0f; } }
 
@@ -86,17 +84,18 @@ public class Drone : MonoBehaviour {
     private Vector2 rightJoystick;
 
     private Rigidbody rb;
+    private KalmanFilter kalmanFilter;
     private LineRenderer[] rotorLines;
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
+        kalmanFilter = GetComponent<KalmanFilter>();
         rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
 
     void FixedUpdate() {
         rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient * Time.fixedDeltaTime);
-        // Debug.Log($"Roll: {rollAngle}, Pitch: {pitchAngle}, Yaw: {transform.eulerAngles.y}");
         double[,] controlToRotorMatrix = new double[4, 4] {
             {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
             {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
@@ -107,7 +106,6 @@ public class Drone : MonoBehaviour {
         float desiredRoll;
         float desiredPitch;
 
-        // Debug.Log($"{rightJoystick.x} {rightJoystick.y} X: {desiredRightVelocity:F2}, Z: {desiredForwardVelocity:F2}");
         if (isSupportOn && rightJoystick.magnitude < 0.1f) {
             float desiredRightVelocity = -localLinearVelocity.x;
             float desiredForwardVelocity = -localLinearVelocity.z;
@@ -165,10 +163,10 @@ public class Drone : MonoBehaviour {
             rotorForcesArray = solution;
         }
 
-        float[] trueRotorForces = new float[4];
+        float[] trueRotorForces = rotorForcesArray.Clone() as float[];
         if (isGroudEffectOn) {
             for (int i = 0; i < 4; i++) {
-                trueRotorForces[i] = rotorForcesArray[i] *(1f + 6f * Mathf.Exp(-Mathf.Max(transform.position.y, 0) * 5f / rotorRadius));
+                trueRotorForces[i] *= 1f + 6f * Mathf.Exp(-Mathf.Max(transform.position.y, 0) * 5f / rotorRadius);
             }
         }
 

@@ -60,7 +60,7 @@ public class Drone : MonoBehaviour {
     private float currentVerticalVelocity { get { return rb.linearVelocity.y; } }
 
     private Vector3 localLinearVelocity { get { return Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * rb.linearVelocity; } }
-    private float rollRate { get { return kalmanFilter.RollRate * Mathf.Deg2Rad; } }
+    private float rollRate { get { return -kalmanFilter.RollRate * Mathf.Deg2Rad; } }
     private float pitchRate { get { return kalmanFilter.PitchRate * Mathf.Deg2Rad; } }
 
     private float mass { get { return rb?.mass ?? 0f; } }

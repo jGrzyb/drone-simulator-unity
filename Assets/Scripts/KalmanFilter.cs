@@ -127,7 +127,7 @@ public class KalmanFilter : MonoBehaviour {
 
 
 
-        double[] rollState = rollFilter.Update(noisyAccRoll, noisyRollRate, Time.fixedDeltaTime);
+        double[] rollState = rollFilter.Update(noisyAccRoll, -noisyRollRate, Time.fixedDeltaTime);
         RollAngle = (float)rollState[0] * Mathf.Rad2Deg;
         RollRate = (float)rollState[1] * Mathf.Rad2Deg;
 

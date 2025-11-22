@@ -24,51 +24,48 @@ public class Drone : MonoBehaviour
     [SerializeField] private VelocityThrustInfluence velocityThrustInfluencePreset;
 
     [Header("Core Physics")]
+    [Tooltip("Proportional gain for correcting roll and pitch errors. Higher values lead to faster, more aggressive corrections.")]
     [SerializeField] private float tiltGain = 5f;
+    [Tooltip("Damping factor for roll and pitch corrections to prevent overshooting and oscillations.")]
     [SerializeField] private float tiltDamping = 1f;
     [Space]
+    [Tooltip("The maximum yaw rotation speed in degrees per second.")]
     [SerializeField] private float maxYawRate = 2f;
+    [Tooltip("Proportional gain for correcting yaw errors.")]
     [SerializeField] private float yawGain = 5f;
     [Space]
+    [Tooltip("The maximum vertical speed in meters per second.")]
     [SerializeField] private float maxVerticalVelocity = 5f;
+    [Tooltip("Proportional gain for correcting vertical velocity errors.")]
     [SerializeField] private float verticalGain = 1f;
     [Space]
+    [Tooltip("A multiplier for the overall thrust of the drone.")]
     [SerializeField] private float thrustMultiplier = 1f;
+    [Tooltip("A coefficient representing the torque produced by rotor drag, used for yaw control.")]
     [SerializeField] private float dragMultiplier = 1f;
+    [Tooltip("A coefficient for simulating air resistance (drag) on the drone's body.")]
     [SerializeField] private float airResistanceCoefficient = 1f;
     [Space]
+    [Tooltip("The distance of each rotor from the center of the drone.")]
     [SerializeField] private float rotorDistance = 0.5f;
+    [Tooltip("The layout of the rotors. True for '+' configuration, False for 'x' configuration.")]
     [SerializeField] private bool isRotorInFront = true;
-
-    [Header("Visuals")]
-    [SerializeField] private LineRenderer rotorLinePrefab;
 
     public Rigidbody Rb { get; private set; }
     public Vector2 LeftJoystick { get; private set; }
     public Vector2 RightJoystick { get; private set; }
-    public Vector3 LocalLinearVelocity => Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * Rb.linearVelocity;
-    public float CurrentRoll => -CurrentTiltEstimator.RollAngle * Mathf.Deg2Rad;
-    public float CurrentPitch => CurrentTiltEstimator.PitchAngle * Mathf.Deg2Rad;
-    public float RollRate => -CurrentTiltEstimator.RollRate * Mathf.Deg2Rad;
-    public float PitchRate => CurrentTiltEstimator.PitchRate * Mathf.Deg2Rad;
-    public float CurrentYawVelocity => transform.InverseTransformDirection(Rb.angularVelocity).y * Mathf.Deg2Rad;
-    public float CurrentVerticalVelocity => Rb.linearVelocity.y;
-    public float Mass => Rb?.mass ?? 0f;
-    public Vector3[] RotorPoses =>
-        Enumerable.Range(0, 4).Select(i => {
-            float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
-            return new Vector3(
-                Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
-                0f,
-                Mathf.Sin(placementDegree + i * Mathf.PI / 2) * rotorDistance
-            );
-        }).ToArray();
-    public double[,] ControlToRotorMatrix => new double[4, 4] {
-        {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
-        {RotorPoses[0].x, RotorPoses[1].x, RotorPoses[2].x, RotorPoses[3].x},
-        {-RotorPoses[0].z, -RotorPoses[1].z, -RotorPoses[2].z, -RotorPoses[3].z},
-        {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
-    };
+
+    public Vector3 LocalLinearVelocity { get; private set; }
+    public float CurrentRoll { get; private set; }
+    public float CurrentPitch { get; private set; }
+    public float RollRate { get; private set; }
+    public float PitchRate { get; private set; }
+    public float CurrentYawVelocity { get; private set; }
+    public float CurrentVerticalVelocity { get; private set; }
+    public float Mass { get; private set; }
+
+    public Vector3[] RotorPoses { get; private set; }
+    public double[,] ControlToRotorMatrix { get; private set; }
 
     [HideInInspector] public float[] RotorForcesArray = new float[4];
 
@@ -79,13 +76,15 @@ public class Drone : MonoBehaviour
     public GroundEffect CurrentGroundEffect { get; private set; }
     public VelocityThrustInfluence CurrentVelocityThrustInfluence { get; private set; }
 
-    private LineRenderer[] rotorLines;
-
     void Awake()
     {
         Rb = GetComponent<Rigidbody>();
-        rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
 
+        InitializeModifiers();
+    }
+
+    private void InitializeModifiers()
+    {
         if (tiltEstimatorPreset != null)
         {
             CurrentTiltEstimator = Instantiate(tiltEstimatorPreset);
@@ -100,18 +99,50 @@ public class Drone : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (CurrentTiltEstimator != null)
-        {
-            CurrentTiltEstimator.Estimate(this);
-        }
-        else
+        if (CurrentTiltEstimator == null)
         {
             Debug.LogError("No TiltEstimator assigned to the drone!");
             return;
         }
+        CurrentTiltEstimator.Estimate(this);
 
+        UpdateCurrentState();
+
+        RunControlPipeline();
+    }
+
+    private void UpdateCurrentState()
+    {
+        Mass = Rb.mass;
+        CurrentRoll = -CurrentTiltEstimator.RollAngle * Mathf.Deg2Rad;
+        CurrentPitch = CurrentTiltEstimator.PitchAngle * Mathf.Deg2Rad;
+        RollRate = -CurrentTiltEstimator.RollRate * Mathf.Deg2Rad;
+        PitchRate = CurrentTiltEstimator.PitchRate * Mathf.Deg2Rad;
+
+        LocalLinearVelocity = Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * Rb.linearVelocity;
+        CurrentYawVelocity = transform.InverseTransformDirection(Rb.angularVelocity).y * Mathf.Deg2Rad;
+        CurrentVerticalVelocity = Rb.linearVelocity.y;
+
+        RotorPoses = Enumerable.Range(0, 4).Select(i => {
+            float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
+            return new Vector3(
+                Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
+                0f,
+                Mathf.Sin(placementDegree + i * Mathf.PI / 2) * rotorDistance
+            );
+        }).ToArray();
+
+        ControlToRotorMatrix = new double[4, 4] {
+            {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
+            {RotorPoses[0].x, RotorPoses[1].x, RotorPoses[2].x, RotorPoses[3].x},
+            {-RotorPoses[0].z, -RotorPoses[1].z, -RotorPoses[2].z, -RotorPoses[3].z},
+            {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
+        };
+    }
+
+    private void RunControlPipeline()
+    {
         Rb.AddForce(-Rb.linearVelocity * Rb.linearVelocity.magnitude * airResistanceCoefficient * Time.fixedDeltaTime);
-
 
         float desiredRoll = 0f, desiredPitch = 0f;
         if (CurrentTargetModifier != null)
@@ -139,9 +170,16 @@ public class Drone : MonoBehaviour
             solution = Matrix.Solve(ControlToRotorMatrix, controlInputArray).Select(x => (float)x).ToArray();
         }
 
-        float[] smoothedForces = (CurrentFluentRotor != null) ? CurrentFluentRotor.Smooth(this, solution) : solution;
+        if (CurrentFluentRotor != null)
+        {
+            CurrentFluentRotor.Smooth(this, solution);
+        }
+        else
+        {
+            System.Array.Copy(solution, RotorForcesArray, solution.Length);
+        }
 
-        float[] finalRotorForces = (float[])smoothedForces.Clone();
+        float[] finalRotorForces = (float[])RotorForcesArray.Clone();
         if (CurrentGroundEffect != null)
         {
             CurrentGroundEffect.PostProcess(this, ref finalRotorForces);
@@ -157,20 +195,11 @@ public class Drone : MonoBehaviour
 
             float offset = dragMultiplier / 2.0f;
             float sign = (i % 2 == 0) ? -1f : 1f;
-
             Rb.AddForceAtPosition(transform.forward * finalRotorForces[i] * sign, transform.TransformPoint(RotorPoses[i] + new Vector3(offset, 0, 0)));
             Rb.AddForceAtPosition(-transform.forward * finalRotorForces[i] * sign, transform.TransformPoint(RotorPoses[i] - new Vector3(offset, 0, 0)));
         }
     }
 
-    void Update()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            rotorLines[i].SetPosition(0, transform.TransformPoint(RotorPoses[i]));
-            rotorLines[i].SetPosition(1, transform.TransformPoint(RotorPoses[i] + Vector3.up * RotorForcesArray[i] * 0.1f));
-        }
-    }
 
     public void Move(InputAction.CallbackContext context)
     {

@@ -2,7 +2,6 @@ using UnityEngine;
 using Accord.Math;
 using Vector3 = UnityEngine.Vector3;
 
-// The Kalman helper class remains the same, but is now part of this file.
 public class Kalman {
 
     private double[] x;

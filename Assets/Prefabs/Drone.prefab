@@ -127,6 +127,7 @@ GameObject:
   - component: {fileID: 7338125210091992842}
   - component: {fileID: 3877485977581103669}
   - component: {fileID: 6365815623437740120}
+  - component: {fileID: 8695317791230896407}
   m_Layer: 0
   m_Name: Drone
   m_TagString: Untagged
@@ -484,7 +485,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7985434328639754853}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bee5ed5d4c02bfd3b367d3452832852, type: 3}
+  m_Script: {fileID: 11500000, guid: fcfa2cdeb912d46b997778d7a099db60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Drone
   tiltEstimatorPreset: {fileID: 11400000, guid: 2c3cfcc133c4ecb0e9a0fe13d926ada8, type: 2}
@@ -504,9 +505,22 @@ MonoBehaviour:
   airResistanceCoefficient: 1
   rotorDistance: 0.5
   isRotorInFront: 1
-  rotorLinePrefab: {fileID: 7218557307555830096, guid: 8dd64752c66ba0af2b446b9f554d4745, type: 3}
   RotorForcesArray:
   - 0
   - 0
   - 0
   - 0
+--- !u!114 &8695317791230896407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7985434328639754853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a82a11b2c092ea64cba9de951b2c1d71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DroneVisualizer
+  rotorLinePrefab: {fileID: 7218557307555830096, guid: 8dd64752c66ba0af2b446b9f554d4745, type: 3}
+  forceLineScale: 0.5

@@ -7,12 +7,14 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "ConstrainedRotorForceCalculator", menuName = "Drone/Modifiers/Rotor Force Calculator/Constrained")]
 public class ConstrainedRotorForceCalculator : RotorForceCalculator
 {
+    [Tooltip("The minimum force each rotor can produce. Can be negative")]
+    public float minRotorForce = 0.0f;
     [Tooltip("The maximum force each rotor can produce.")]
     public float maxRotorForce = 10.0f;
 
     public override float[] Calculate(Drone drone, float upwardForce, float rollControl, float pitchControl, float yawControl)
     {
-        upwardForce = Mathf.Clamp(upwardForce, 0, 4 * maxRotorForce);
+        upwardForce = Mathf.Clamp(upwardForce, 4 * minRotorForce, 4 * maxRotorForce);
         double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
         double[,] hMatrix = Matrix.Dot(drone.ControlToRotorMatrix.Transpose(), drone.ControlToRotorMatrix).Multiply(2);
         double[] fVector = Matrix.Dot(drone.ControlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);

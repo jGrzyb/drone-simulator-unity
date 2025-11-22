@@ -7,10 +7,11 @@ using Vector3 = UnityEngine.Vector3;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInput))]
-[RequireComponent(typeof(KalmanFilter))]
 public class Drone : MonoBehaviour
 {
     [Header("Modifier Presets")]
+    [Tooltip("The preset for estimating the drone's tilt and angular rates.")]
+    [SerializeField] private TiltEstimator tiltEstimatorPreset;
     [Tooltip("The preset for calculating desired roll and pitch. Assign a TargetModifier asset.")]
     [SerializeField] private TargetModifier targetModifierPreset;
     [Tooltip("The preset for calculating rotor forces. Assign a RotorForceCalculator asset.")]
@@ -43,14 +44,13 @@ public class Drone : MonoBehaviour
     [SerializeField] private LineRenderer rotorLinePrefab;
 
     public Rigidbody Rb { get; private set; }
-    public KalmanFilter KalmanFilter { get; private set; }
     public Vector2 LeftJoystick { get; private set; }
     public Vector2 RightJoystick { get; private set; }
     public Vector3 LocalLinearVelocity => Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * Rb.linearVelocity;
-    public float CurrentRoll => -KalmanFilter.RollAngle * Mathf.Deg2Rad;
-    public float CurrentPitch => KalmanFilter.PitchAngle * Mathf.Deg2Rad;
-    public float RollRate => -KalmanFilter.RollRate * Mathf.Deg2Rad;
-    public float PitchRate => KalmanFilter.PitchRate * Mathf.Deg2Rad;
+    public float CurrentRoll => -CurrentTiltEstimator.RollAngle * Mathf.Deg2Rad;
+    public float CurrentPitch => CurrentTiltEstimator.PitchAngle * Mathf.Deg2Rad;
+    public float RollRate => -CurrentTiltEstimator.RollRate * Mathf.Deg2Rad;
+    public float PitchRate => CurrentTiltEstimator.PitchRate * Mathf.Deg2Rad;
     public float CurrentYawVelocity => transform.InverseTransformDirection(Rb.angularVelocity).y * Mathf.Deg2Rad;
     public float CurrentVerticalVelocity => Rb.linearVelocity.y;
     public float Mass => Rb?.mass ?? 0f;
@@ -72,6 +72,7 @@ public class Drone : MonoBehaviour
 
     [HideInInspector] public float[] RotorForcesArray = new float[4];
 
+    public TiltEstimator CurrentTiltEstimator { get; private set; }
     public TargetModifier CurrentTargetModifier { get; private set; }
     public RotorForceCalculator CurrentRotorForceCalculator { get; private set; }
     public FluentRotorSmoother CurrentFluentRotor { get; private set; }
@@ -83,20 +84,32 @@ public class Drone : MonoBehaviour
     void Awake()
     {
         Rb = GetComponent<Rigidbody>();
-        KalmanFilter = GetComponent<KalmanFilter>();
-        Rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
 
+        if (tiltEstimatorPreset != null)
+        {
+            CurrentTiltEstimator = Instantiate(tiltEstimatorPreset);
+            CurrentTiltEstimator.Initialize(this);
+        }
         if (targetModifierPreset != null) CurrentTargetModifier = Instantiate(targetModifierPreset);
         if (rotorForceCalculatorPreset != null) CurrentRotorForceCalculator = Instantiate(rotorForceCalculatorPreset);
         if (fluentRotorPreset != null) CurrentFluentRotor = Instantiate(fluentRotorPreset);
-
         if (groundEffectPreset != null) CurrentGroundEffect = Instantiate(groundEffectPreset);
         if (velocityThrustInfluencePreset != null) CurrentVelocityThrustInfluence = Instantiate(velocityThrustInfluencePreset);
     }
 
     void FixedUpdate()
     {
+        if (CurrentTiltEstimator != null)
+        {
+            CurrentTiltEstimator.Estimate(this);
+        }
+        else
+        {
+            Debug.LogError("No TiltEstimator assigned to the drone!");
+            return;
+        }
+
         Rb.AddForce(-Rb.linearVelocity * Rb.linearVelocity.magnitude * airResistanceCoefficient * Time.fixedDeltaTime);
 
 

@@ -127,7 +127,6 @@ GameObject:
   - component: {fileID: 7338125210091992842}
   - component: {fileID: 3877485977581103669}
   - component: {fileID: 6365815623437740120}
-  - component: {fileID: 5252597021492350516}
   m_Layer: 0
   m_Name: Drone
   m_TagString: Untagged
@@ -488,7 +487,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bee5ed5d4c02bfd3b367d3452832852, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Drone
-  maxTiltAngle: 30
+  tiltEstimatorPreset: {fileID: 11400000, guid: 2c3cfcc133c4ecb0e9a0fe13d926ada8, type: 2}
+  targetModifierPreset: {fileID: 11400000, guid: 03d20ce824cfee842999edbaa0409f6f, type: 2}
+  rotorForceCalculatorPreset: {fileID: 11400000, guid: 0b9bafce3364f58069f9ff6b688c54a4, type: 2}
+  fluentRotorPreset: {fileID: 0}
+  groundEffectPreset: {fileID: 11400000, guid: ceb5fb274377a9f238909f1032acc71f, type: 2}
+  velocityThrustInfluencePreset: {fileID: 0}
   tiltGain: 5
   tiltDamping: 1
   maxYawRate: 2
@@ -500,30 +504,9 @@ MonoBehaviour:
   airResistanceCoefficient: 1
   rotorDistance: 0.5
   isRotorInFront: 1
-  isRotorContrained: 1
-  maxRotorForce: 10
-  isFluentRotor: 1
-  maxRotorDelta: 0.5
-  isSupportOn: 1
-  supportGain: 0.5
-  isGroudEffectOn: 1
-  rotorRadius: 0.2
-  doesVelocityInfluenceThrust: 0
   rotorLinePrefab: {fileID: 7218557307555830096, guid: 8dd64752c66ba0af2b446b9f554d4745, type: 3}
---- !u!114 &5252597021492350516
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7985434328639754853}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5671eea3f61d1f03a387b26f11d1058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KalmanFilter
-  accelerometerNoise: 0.1
-  gyroscopeNoise: 0.1
-  q_angle: 0.001
-  q_rate: 0.003
-  r_measure: 0.03
+  RotorForcesArray:
+  - 0
+  - 0
+  - 0
+  - 0

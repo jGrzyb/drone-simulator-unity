@@ -32,7 +32,7 @@ public class Drone : MonoBehaviour
     [Tooltip("The maximum yaw rotation speed in degrees per second.")]
     [SerializeField] private float maxYawRate = 2f;
     [Tooltip("Proportional gain for correcting yaw errors.")]
-    [SerializeField] private float yawGain = 5f;
+    [SerializeField] private float yawGain = 2f;
     [Space]
     [Tooltip("The maximum vertical speed in meters per second.")]
     [SerializeField] private float maxVerticalVelocity = 5f;
@@ -42,9 +42,11 @@ public class Drone : MonoBehaviour
     [Tooltip("A multiplier for the overall thrust of the drone.")]
     [SerializeField] private float thrustMultiplier = 1f;
     [Tooltip("A coefficient representing the torque produced by rotor drag, used for yaw control.")]
-    [SerializeField] private float dragMultiplier = 1f;
+    [SerializeField] private float dragMultiplier = 0.01f;
+    [Tooltip("A multiplier for the yaw control torque.")]
+    [SerializeField] private float yawTorqueMultiplier = 0.1f;
     [Tooltip("A coefficient for simulating air resistance (drag) on the drone's body.")]
-    [SerializeField] private float airResistanceCoefficient = 1f;
+    [SerializeField] private float airResistanceCoefficient = 0.02f;
     [Space]
     [Tooltip("The distance of each rotor from the center of the drone.")]
     [SerializeField] private float rotorDistance = 0.5f;
@@ -142,7 +144,7 @@ public class Drone : MonoBehaviour
 
     private void RunControlPipeline()
     {
-        Rb.AddForce(-Rb.linearVelocity * Rb.linearVelocity.magnitude * airResistanceCoefficient * Time.fixedDeltaTime);
+        Rb.AddForce(-Rb.linearVelocity * Rb.linearVelocity.magnitude * airResistanceCoefficient);
 
         float desiredRoll = 0f, desiredPitch = 0f;
         if (CurrentTargetModifier != null)
@@ -153,10 +155,10 @@ public class Drone : MonoBehaviour
         float desiredYawVelocity = LeftJoystick.x * maxYawRate * Mathf.Deg2Rad;
         float desiredVerticalVelocity = LeftJoystick.y * maxVerticalVelocity;
 
+        float upwardForce = (verticalGain * (desiredVerticalVelocity - CurrentVerticalVelocity) + Mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
         float rollControl = tiltGain * (desiredRoll - CurrentRoll) - tiltDamping * RollRate;
         float pitchControl = tiltGain * (desiredPitch - CurrentPitch) - tiltDamping * PitchRate;
-        float yawControl = 40 * yawGain * (desiredYawVelocity - CurrentYawVelocity);
-        float upwardForce = (verticalGain * (desiredVerticalVelocity - CurrentVerticalVelocity) + Mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
+        float yawControl = yawGain * (desiredYawVelocity - CurrentYawVelocity);
 
         float[] solution;
         if (CurrentRotorForceCalculator != null)
@@ -193,10 +195,9 @@ public class Drone : MonoBehaviour
         {
             Rb.AddForceAtPosition(transform.up * finalRotorForces[i], transform.TransformPoint(RotorPoses[i]));
 
-            float offset = dragMultiplier / 2.0f;
             float sign = (i % 2 == 0) ? -1f : 1f;
-            Rb.AddForceAtPosition(transform.forward * finalRotorForces[i] * sign, transform.TransformPoint(RotorPoses[i] + new Vector3(offset, 0, 0)));
-            Rb.AddForceAtPosition(-transform.forward * finalRotorForces[i] * sign, transform.TransformPoint(RotorPoses[i] - new Vector3(offset, 0, 0)));
+            Rb.AddForceAtPosition(transform.forward * finalRotorForces[i] * sign * yawTorqueMultiplier, transform.TransformPoint(RotorPoses[i] + new Vector3(1, 0, 0)));
+            Rb.AddForceAtPosition(-transform.forward * finalRotorForces[i] * sign * yawTorqueMultiplier, transform.TransformPoint(RotorPoses[i] - new Vector3(1, 0, 0)));
         }
     }
 

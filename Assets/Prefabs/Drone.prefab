@@ -497,12 +497,13 @@ MonoBehaviour:
   tiltGain: 5
   tiltDamping: 1
   maxYawRate: 2
-  yawGain: 5
+  yawGain: 2
   maxVerticalVelocity: 5
   verticalGain: 1
   thrustMultiplier: 1
-  dragMultiplier: 1
-  airResistanceCoefficient: 1
+  dragMultiplier: 0.01
+  yawTorqueMultiplier: 0.1
+  airResistanceCoefficient: 0.02
   rotorDistance: 0.5
   isRotorInFront: 1
   RotorForcesArray:

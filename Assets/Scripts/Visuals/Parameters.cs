@@ -115,6 +115,7 @@ public class StrategyParameter<TStrategy> : Parameter where TStrategy : class
         }
         _lastKnownStrategy = currentStrategy;
 
+        base.Sync();
     }
 }
 

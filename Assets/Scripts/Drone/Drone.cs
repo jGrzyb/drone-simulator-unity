@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using Accord.Math;
 using Vector3 = UnityEngine.Vector3;
@@ -52,6 +53,12 @@ public class Drone : MonoBehaviour
     [SerializeField] public float rotorDistance = 0.5f;
     [Tooltip("The layout of the rotors. True for '+' configuration, False for 'x' configuration.")]
     [SerializeField] public bool isRotorInFront = true;
+
+    [Space]
+    [Header("Events")]
+    public UnityEvent OnSwitchCamera;
+    public UnityEvent OnRestart;
+    public UnityEvent OnToggleUI;
 
     public Rigidbody Rb { get; private set; }
     public Vector2 LeftJoystick { get; private set; }
@@ -210,6 +217,36 @@ public class Drone : MonoBehaviour
     public void Look(InputAction.CallbackContext context)
     {
         RightJoystick = context.ReadValue<Vector2>();
+    }
+
+    public void SwitchCamera(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnSwitchCamera?.Invoke();
+        }
+    }
+
+    public void Restart(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnRestart?.Invoke();
+        }
+    }
+
+    public void ToggleUI(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnToggleUI?.Invoke();
+        }
+    }
+    
+    public void ResetState()
+    {
+        InitializeModifiers();
+        System.Array.Clear(RotorForcesArray, 0, RotorForcesArray.Length);
     }
 
     #region Strategy Setters

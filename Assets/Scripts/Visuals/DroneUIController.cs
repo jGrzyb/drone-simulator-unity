@@ -199,6 +199,11 @@ public class DroneUIController : MonoBehaviour {
         toggle.onValueChanged.AddListener(x => setter(x));
     }
     #endregion
+
+    public void ToggleVisibility()
+    {
+        gameObject.SetActive(!gameObject.activeSelf);
+    }
 }
 
 

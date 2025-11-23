@@ -25,6 +25,9 @@ public class CameraRotate : MonoBehaviour
 
     [Header("Ground Mode")]
     [SerializeField] private Vector3 groundPosition = new Vector3(0, 1, -15);
+    [SerializeField] private float groundZoomMultiplier = 1f;
+    [SerializeField] private float minFovGround = 10f;
+    [SerializeField] private float maxFovGround = 60f;
 
     private Drone drone;
     private Camera mainCamera;
@@ -75,11 +78,7 @@ public class CameraRotate : MonoBehaviour
                 break;
         }
 
-        if (drone.Rb != null)
-        {
-            float targetFov = 60f + drone.Rb.linearVelocity.magnitude * 2f;
-            mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, Mathf.Clamp(targetFov, 60f, 100f), Time.deltaTime * 5f);
-        }
+        UpdateFOV();
     }
 
     void HandleFollowMode()
@@ -103,5 +102,27 @@ public class CameraRotate : MonoBehaviour
     {
         transform.position = groundPosition;
         transform.LookAt(drone.transform);
+    }
+
+    void UpdateFOV()
+    {
+        if (drone.Rb == null) return;
+
+        float targetFov;
+        float currentVelocityFovFactor = drone.Rb.linearVelocity.magnitude * 2f;
+
+        switch (currentMode)
+        {
+            case CameraMode.Follow:
+            case CameraMode.FPV:
+                targetFov = 60f + currentVelocityFovFactor;
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, Mathf.Clamp(targetFov, 60f, 100f), Time.deltaTime * 5f);
+                break;
+            case CameraMode.Ground:
+                float distanceToDrone = Vector3.Distance(transform.position, drone.transform.position);
+                targetFov = maxFovGround - (distanceToDrone * groundZoomMultiplier);
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, Mathf.Clamp(targetFov, minFovGround, maxFovGround), Time.deltaTime * 5f);
+                break;
+        }
     }
 }

@@ -2456,6 +2456,9 @@ MonoBehaviour:
   followRotationSmoothSpeed: 5
   fpvOffset: {x: 0, y: 0, z: 0.6}
   groundPosition: {x: 0, y: 2, z: -15}
+  groundZoomMultiplier: 0.7
+  minFovGround: 10
+  maxFovGround: 60
 --- !u!1 &53807601
 GameObject:
   m_ObjectHideFlags: 0

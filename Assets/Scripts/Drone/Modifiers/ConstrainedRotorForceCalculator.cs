@@ -30,7 +30,7 @@ public class ConstrainedRotorForceCalculator : RotorForceCalculator
             {
                 CombinedAs = coeff,
                 ShouldBe = ConstraintType.GreaterThanOrEqualTo,
-                Value = 0.0
+                Value = minRotorForce
             });
             constraints.Add(new LinearConstraint(4)
             {

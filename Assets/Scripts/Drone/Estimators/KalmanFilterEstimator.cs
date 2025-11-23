@@ -43,19 +43,19 @@ public class KalmanFilterEstimator : TiltEstimator
 {
     [Header("Sensor Simulation")]
     [Tooltip("Noise added to the accelerometer readings.")]
-    [SerializeField] private float accelerometerNoise = 0.1f;
+    [SerializeField] public float accelerometerNoise = 0.1f;
     [Tooltip("Noise added to the gyroscope readings.")]
-    [SerializeField] private float gyroscopeNoise = 0.1f;
+    [SerializeField] public float gyroscopeNoise = 0.1f;
 
     [Header("Kalman Filter Parameters")]
     [Tooltip("Process noise for the angle. Represents uncertainty in the physics model.")]
-    [SerializeField] private float q_angle = 0.001f;
+    [SerializeField] public float q_angle = 0.001f;
     [Tooltip("Process noise for the angular rate. Represents uncertainty in the physics model.")]
-    [SerializeField] private float q_rate = 0.003f;
+    [SerializeField] public float q_rate = 0.003f;
     [Tooltip("Measurement noise for the angle. Represents how much you trust the accelerometer.")]
-    [SerializeField] private float r_angle = 0.03f;
+    [SerializeField] public float r_angle = 0.03f;
     [Tooltip("Measurement noise for the rate. Represents how much you trust the gyroscope.")]
-    [SerializeField] private float r_rate = 0.03f;
+    [SerializeField] public float r_rate = 0.03f;
 
     private Kalman rollFilter;
     private Kalman pitchFilter;

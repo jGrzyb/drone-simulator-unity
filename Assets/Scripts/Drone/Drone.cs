@@ -25,33 +25,33 @@ public class Drone : MonoBehaviour
 
     [Header("Core Physics")]
     [Tooltip("Proportional gain for correcting roll and pitch errors. Higher values lead to faster, more aggressive corrections.")]
-    [SerializeField] private float tiltGain = 5f;
+    [SerializeField] public float tiltGain = 5f;
     [Tooltip("Damping factor for roll and pitch corrections to prevent overshooting and oscillations.")]
-    [SerializeField] private float tiltDamping = 1f;
+    [SerializeField] public float tiltDamping = 1f;
     [Space]
     [Tooltip("The maximum yaw rotation speed in degrees per second.")]
-    [SerializeField] private float maxYawRate = 2f;
+    [SerializeField] public float maxYawRate = 2f;
     [Tooltip("Proportional gain for correcting yaw errors.")]
-    [SerializeField] private float yawGain = 2f;
+    [SerializeField] public float yawGain = 2f;
     [Space]
     [Tooltip("The maximum vertical speed in meters per second.")]
-    [SerializeField] private float maxVerticalVelocity = 5f;
+    [SerializeField] public float maxVerticalVelocity = 5f;
     [Tooltip("Proportional gain for correcting vertical velocity errors.")]
-    [SerializeField] private float verticalGain = 1f;
+    [SerializeField] public float verticalGain = 1f;
     [Space]
     [Tooltip("A multiplier for the overall thrust of the drone.")]
-    [SerializeField] private float thrustMultiplier = 1f;
+    [SerializeField] public float thrustMultiplier = 1f;
     [Tooltip("A coefficient representing the torque produced by rotor drag, used for yaw control.")]
-    [SerializeField] private float dragMultiplier = 0.01f;
+    [SerializeField] public float dragMultiplier = 0.01f;
     [Tooltip("A multiplier for the yaw control torque.")]
-    [SerializeField] private float yawTorqueMultiplier = 0.1f;
+    [SerializeField] public float yawTorqueMultiplier = 0.1f;
     [Tooltip("A coefficient for simulating air resistance (drag) on the drone's body.")]
-    [SerializeField] private float airResistanceCoefficient = 0.02f;
+    [SerializeField] public float airResistanceCoefficient = 0.02f;
     [Space]
     [Tooltip("The distance of each rotor from the center of the drone.")]
-    [SerializeField] private float rotorDistance = 0.5f;
+    [SerializeField] public float rotorDistance = 0.5f;
     [Tooltip("The layout of the rotors. True for '+' configuration, False for 'x' configuration.")]
-    [SerializeField] private bool isRotorInFront = true;
+    [SerializeField] public bool isRotorInFront = true;
 
     public Rigidbody Rb { get; private set; }
     public Vector2 LeftJoystick { get; private set; }
@@ -211,4 +211,40 @@ public class Drone : MonoBehaviour
     {
         RightJoystick = context.ReadValue<Vector2>();
     }
+
+    #region Strategy Setters
+    public void SetTiltEstimator(TiltEstimator preset)
+    {
+        if (preset == null) return;
+        CurrentTiltEstimator = Instantiate(preset);
+        CurrentTiltEstimator.Initialize(this);
+    }
+
+    public void SetTargetModifier(TargetModifier preset)
+    {
+        if (preset == null) return;
+        CurrentTargetModifier = Instantiate(preset);
+    }
+
+    public void SetRotorForceCalculator(RotorForceCalculator preset)
+    {
+        if (preset == null) return;
+        CurrentRotorForceCalculator = Instantiate(preset);
+    }
+
+    public void SetFluentRotor(FluentRotorSmoother preset)
+    {
+        CurrentFluentRotor = preset != null ? Instantiate(preset) : null;
+    }
+
+    public void SetGroundEffect(GroundEffect preset)
+    {
+        CurrentGroundEffect = preset != null ? Instantiate(preset) : null;
+    }
+
+    public void SetVelocityThrustInfluence(VelocityThrustInfluence preset)
+    {
+        CurrentVelocityThrustInfluence = preset != null ? Instantiate(preset) : null;
+    }
+    #endregion
 }

@@ -29,21 +29,42 @@ public class DroneUIController : MonoBehaviour {
     public Toggle groundEffectToggle;
     public Toggle velocityInfluenceToggle;
 
-    [Header("Parameter Controls")]
-    [Tooltip("Assign all ParameterControl prefabs from your UI here.")]
-    public List<ParameterControl> parameterControls;
-    [Tooltip("Assign the 'Is Rotor In Front' toggle here.")]
+    [Header("Core Parameters")]
+    public ParameterControl tiltGain;
+    public ParameterControl tiltDamping;
+    public ParameterControl yawGain;
+    public ParameterControl maxYawRate;
+    public ParameterControl maxVerticalVelocity;
+    public ParameterControl verticalGain;
+    public ParameterControl thrustMultiplier;
+    public ParameterControl dragMultiplier;
+    public ParameterControl airResistance;
+    public ParameterControl rotorDistance;
     public Toggle isRotorInFrontToggle;
 
-    private Dictionary<string, ParameterControl> controlDict = new Dictionary<string, ParameterControl>();
+    [Header("Kalman Filter Parameters")]
+    public ParameterControl kalmanAccelNoise;
+    public ParameterControl kalmanGyroNoise;
+    public ParameterControl kalmanQAngle;
+    public ParameterControl kalmanQRate;
+    public ParameterControl kalmanRAngle;
+    public ParameterControl kalmanRRate;
+    
+    [Header("Target Modifier Parameters")]
+    public ParameterControl maxTiltAngle;
+    public ParameterControl supportGain;
+    
+    [Header("Rotor Force Calculator Parameters")]
+    public ParameterControl maxRotorForce;
+    public ParameterControl minRotorForce;
 
-    #region Override Value Storage
-    private float? accelNoiseOverride, gyroNoiseOverride, qAngleOverride, qRateOverride, rAngleOverride, rRateOverride;
-    private float? maxTiltAngleOverride, supportGainOverride;
-    private float? maxRotorForceOverride, minRotorForceOverride;
-    private float? maxRotorDeltaOverride;
-    private float? rotorRadiusOverride;
-    #endregion
+    [Header("Fluent Rotor Smoother Parameters")]
+    public ParameterControl maxRotorDelta;
+
+    [Header("Ground Effect Parameters")]
+    public ParameterControl rotorRadius;
+    
+    private readonly List<Parameter> allParameters = new List<Parameter>();
 
     void Awake() {
         drone = drone ?? FindFirstObjectByType<Drone>();
@@ -55,12 +76,14 @@ public class DroneUIController : MonoBehaviour {
             return;
         }
 
-        foreach (var control in parameterControls) {
-            controlDict[control.name] = control;
+        SetupParameters();
+        
+        foreach (var parameter in allParameters)
+        {
+            parameter.InitializeUI();
         }
 
         SetupStrategyControls();
-        SetupParameterControls();
         UpdateUIVisibility();
     }
 
@@ -72,89 +95,55 @@ public class DroneUIController : MonoBehaviour {
         SetupToggleStrategyControl(fluentRotorToggle, fluentRotorPreset, drone.CurrentFluentRotor, (p) => drone.SetFluentRotor(p));
         SetupToggleStrategyControl(groundEffectToggle, groundEffectPreset, drone.CurrentGroundEffect, (p) => drone.SetGroundEffect(p));
         SetupToggleStrategyControl(velocityInfluenceToggle, velocityInfluencePreset, drone.CurrentVelocityThrustInfluence, (p) => drone.SetVelocityThrustInfluence(p));
-    }
-
-    private void SetupParameterControls() {
-        GetControl("TiltGain")?.Initialize("Tilt Gain", 0, 20, drone.tiltGain, v => drone.tiltGain = v);
-        GetControl("TiltDamping")?.Initialize("Tilt Damping", 0, 10, drone.tiltDamping, v => drone.tiltDamping = v);
-        GetControl("YawGain")?.Initialize("Yaw Gain", 0, 10, drone.yawGain, v => drone.yawGain = v);
-        GetControl("MaxYawRate")?.Initialize("Max Yaw Rate", 0, 10, drone.maxYawRate, v => drone.maxYawRate = v);
-        GetControl("MaxVerticalVelocity")?.Initialize("Max Vert. Velocity", 0, 50, drone.maxVerticalVelocity, v => drone.maxVerticalVelocity = v);
-        GetControl("VerticalGain")?.Initialize("Vertical Gain", 0, 10, drone.verticalGain, v => drone.verticalGain = v);
-        GetControl("ThrustMultiplier")?.Initialize("Thrust Multiplier", 0, 5, drone.thrustMultiplier, v => drone.thrustMultiplier = v);
-        GetControl("DragMultiplier")?.Initialize("Drag Multiplier", 0, 1, drone.dragMultiplier, v => drone.dragMultiplier = v);
-        GetControl("AirResistance")?.Initialize("Air Resistance", 0, 2, drone.airResistanceCoefficient, v => drone.airResistanceCoefficient = v);
-        GetControl("RotorDistance")?.Initialize("Rotor Distance", 0.1f, 5, drone.rotorDistance, v => drone.rotorDistance = v);
+        
         SetupLinkedToggle(isRotorInFrontToggle, drone.isRotorInFront, v => drone.isRotorInFront = v);
+    }
+    
+    private void SetupParameters()
+    {
+        void AddParam(Parameter param, ParameterControl control)
+        {
+            param.UIControl = control;
+            allParameters.Add(param);
+        }
 
-        GetControl("KalmanAccelNoise")?.Initialize("Accel Noise", 0, 1, 0, v => { var k = drone.CurrentTiltEstimator as KalmanFilterEstimator; if (k != null) k.accelerometerNoise = v; accelNoiseOverride = v; });
-        GetControl("KalmanGyroNoise")?.Initialize("Gyro Noise", 0, 1, 0, v => { var k = drone.CurrentTiltEstimator as KalmanFilterEstimator; if (k != null) k.gyroscopeNoise = v; gyroNoiseOverride = v; });
-        GetControl("KalmanQ_Angle")?.Initialize("Q Angle", 0, 0.1f, 0, v => { var k = drone.CurrentTiltEstimator as KalmanFilterEstimator; if (k != null) k.q_angle = v; qAngleOverride = v; });
-        GetControl("KalmanQ_Rate")?.Initialize("Q Rate", 0, 0.1f, 0, v => { var k = drone.CurrentTiltEstimator as KalmanFilterEstimator; if (k != null) k.q_rate = v; qRateOverride = v; });
-        GetControl("KalmanR_Angle")?.Initialize("R Angle", 0, 1, 0, v => { var k = drone.CurrentTiltEstimator as KalmanFilterEstimator; if (k != null) k.r_angle = v; rAngleOverride = v; });
-        GetControl("KalmanR_Rate")?.Initialize("R Rate", 0, 1, 0, v => { var k = drone.CurrentTiltEstimator as KalmanFilterEstimator; if (k != null) k.r_rate = v; rRateOverride = v; });
+        AddParam(new DroneFloatParameter("Tilt Gain", 0, 20, drone, d => d.tiltGain, (d, v) => d.tiltGain = v), tiltGain);
+        AddParam(new DroneFloatParameter("Tilt Damping", 0, 10, drone, d => d.tiltDamping, (d, v) => d.tiltDamping = v), tiltDamping);
+        AddParam(new DroneFloatParameter("Yaw Gain", 0, 10, drone, d => d.yawGain, (d, v) => d.yawGain = v), yawGain);
+        AddParam(new DroneFloatParameter("Max Yaw Rate", 0, 10, drone, d => d.maxYawRate, (d, v) => d.maxYawRate = v), maxYawRate);
+        AddParam(new DroneFloatParameter("Max Vert. Velocity", 0, 50, drone, d => d.maxVerticalVelocity, (d, v) => d.maxVerticalVelocity = v), maxVerticalVelocity);
+        AddParam(new DroneFloatParameter("Vertical Gain", 0, 10, drone, d => d.verticalGain, (d, v) => d.verticalGain = v), verticalGain);
+        AddParam(new DroneFloatParameter("Thrust Multiplier", 0, 5, drone, d => d.thrustMultiplier, (d, v) => d.thrustMultiplier = v), thrustMultiplier);
+        AddParam(new DroneFloatParameter("Drag Multiplier", 0, 1, drone, d => d.dragMultiplier, (d, v) => d.dragMultiplier = v), dragMultiplier);
+        AddParam(new DroneFloatParameter("Air Resistance", 0, 2, drone, d => d.airResistanceCoefficient, (d, v) => d.airResistanceCoefficient = v), airResistance);
+        AddParam(new DroneFloatParameter("Rotor Distance", 0.1f, 5, drone, d => d.rotorDistance, (d, v) => d.rotorDistance = v), rotorDistance);
 
-        GetControl("MaxTiltAngle")?.Initialize("Max Tilt Angle", 0, 80, 0, v => { SetMaxTiltAngle(v); maxTiltAngleOverride = v; });
-        GetControl("SupportGain")?.Initialize("Support Gain", 0, 5, 0, v => { var s = drone.CurrentTargetModifier as StabilizationSupportModifier; if (s != null) s.supportGain = v; supportGainOverride = v; });
+        AddParam(new StrategyParameter<KalmanFilterEstimator>("Accel Noise", 0, 1, drone, d => d.CurrentTiltEstimator as KalmanFilterEstimator, s => s.accelerometerNoise, (s, v) => s.accelerometerNoise = v), kalmanAccelNoise);
+        AddParam(new StrategyParameter<KalmanFilterEstimator>("Gyro Noise", 0, 1, drone, d => d.CurrentTiltEstimator as KalmanFilterEstimator, s => s.gyroscopeNoise, (s, v) => s.gyroscopeNoise = v), kalmanGyroNoise);
+        AddParam(new StrategyParameter<KalmanFilterEstimator>("Q Angle", 0, 0.1f, drone, d => d.CurrentTiltEstimator as KalmanFilterEstimator, s => s.q_angle, (s, v) => s.q_angle = v), kalmanQAngle);
+        AddParam(new StrategyParameter<KalmanFilterEstimator>("Q Rate", 0, 0.1f, drone, d => d.CurrentTiltEstimator as KalmanFilterEstimator, s => s.q_rate, (s, v) => s.q_rate = v), kalmanQRate);
+        AddParam(new StrategyParameter<KalmanFilterEstimator>("R Angle", 0, 1, drone, d => d.CurrentTiltEstimator as KalmanFilterEstimator, s => s.r_angle, (s, v) => s.r_angle = v), kalmanRAngle);
+        AddParam(new StrategyParameter<KalmanFilterEstimator>("R Rate", 0, 1, drone, d => d.CurrentTiltEstimator as KalmanFilterEstimator, s => s.r_rate, (s, v) => s.r_rate = v), kalmanRRate);
 
-        GetControl("MaxRotorForce")?.Initialize("Max Rotor Force", -100, 100, 0, v => { var c = drone.CurrentRotorForceCalculator as ConstrainedRotorForceCalculator; if (c != null) c.maxRotorForce = v; maxRotorForceOverride = v; });
-        GetControl("MinRotorForce")?.Initialize("Min Rotor Force", -100, 100, 0, v => { var c = drone.CurrentRotorForceCalculator as ConstrainedRotorForceCalculator; if (c != null) c.minRotorForce = v; minRotorForceOverride = v; });
+        AddParam(new MaxTiltAngleParameter("Max Tilt Angle", 0, 80, drone), maxTiltAngle);
+        AddParam(new StrategyParameter<StabilizationSupportModifier>("Support Gain", 0, 1, drone, d => d.CurrentTargetModifier as StabilizationSupportModifier, s => s.supportGain, (s, v) => s.supportGain = v), supportGain);
 
-        GetControl("MaxRotorDelta")?.Initialize("Max Rotor Delta", 0, 5, 0, v => { if (drone.CurrentFluentRotor != null) drone.CurrentFluentRotor.maxRotorDelta = v; maxRotorDeltaOverride = v; });
+        AddParam(new StrategyParameter<ConstrainedRotorForceCalculator>("Max Rotor Force", -100, 100, drone, d => d.CurrentRotorForceCalculator as ConstrainedRotorForceCalculator, s => s.maxRotorForce, (s, v) => s.maxRotorForce = v), maxRotorForce);
+        AddParam(new StrategyParameter<ConstrainedRotorForceCalculator>("Min Rotor Force", -100, 100, drone, d => d.CurrentRotorForceCalculator as ConstrainedRotorForceCalculator, s => s.minRotorForce, (s, v) => s.minRotorForce = v), minRotorForce);
 
-        GetControl("RotorRadius")?.Initialize("Rotor Radius", 0.1f, 1, 0, v => { if (drone.CurrentGroundEffect != null) drone.CurrentGroundEffect.rotorRadius = v; rotorRadiusOverride = v; });
+        AddParam(new StrategyParameter<FluentRotorSmoother>("Max Rotor Delta", 0, 5, drone, d => d.CurrentFluentRotor, s => s.maxRotorDelta, (s, v) => s.maxRotorDelta = v), maxRotorDelta);
+
+        AddParam(new StrategyParameter<GroundEffect>("Rotor Radius", 0.1f, 1, drone, d => d.CurrentGroundEffect, s => s.rotorRadius, (s, v) => s.rotorRadius = v), rotorRadius);
     }
 
     private void UpdateUIVisibility() {
-        var kalman = drone.CurrentTiltEstimator as KalmanFilterEstimator;
-        SetGroupInteractable("Kalman", kalman != null);
-        if (kalman != null) {
-            ApplyOverride(kalman, ref kalman.accelerometerNoise, accelNoiseOverride, "KalmanAccelNoise");
-            ApplyOverride(kalman, ref kalman.gyroscopeNoise, gyroNoiseOverride, "KalmanGyroNoise");
-            ApplyOverride(kalman, ref kalman.q_angle, qAngleOverride, "KalmanQ_Angle");
-            ApplyOverride(kalman, ref kalman.q_rate, qRateOverride, "KalmanQ_Rate");
-            ApplyOverride(kalman, ref kalman.r_angle, rAngleOverride, "KalmanR_Angle");
-            ApplyOverride(kalman, ref kalman.r_rate, rRateOverride, "KalmanR_Rate");
+        foreach (var parameter in allParameters)
+        {
+            parameter.Sync();
         }
-
-        var stabModifier = drone.CurrentTargetModifier as StabilizationSupportModifier;
-        GetControl("SupportGain")?.SetInteractable(stabModifier != null);
-        if (stabModifier != null) {
-            ApplyOverride(stabModifier, ref stabModifier.supportGain, supportGainOverride, "SupportGain");
-        }
-
-        var defaultModifier = drone.CurrentTargetModifier as DefaultTargetModifier;
-        bool hasTilt = stabModifier != null || defaultModifier != null;
-        GetControl("MaxTiltAngle")?.SetInteractable(hasTilt);
-        if (hasTilt) {
-            if (maxTiltAngleOverride.HasValue) SetMaxTiltAngle(maxTiltAngleOverride.Value);
-            GetControl("MaxTiltAngle")?.SetValue(GetMaxTiltAngle());
-        }
-        
-        var constrCalc = drone.CurrentRotorForceCalculator as ConstrainedRotorForceCalculator;
-        bool isConstr = constrCalc != null;
-        GetControl("MaxRotorForce")?.SetInteractable(isConstr);
-        GetControl("MinRotorForce")?.SetInteractable(isConstr);
-        if (constrCalc != null) {
-            ApplyOverride(constrCalc, ref constrCalc.maxRotorForce, maxRotorForceOverride, "MaxRotorForce");
-            ApplyOverride(constrCalc, ref constrCalc.minRotorForce, minRotorForceOverride, "MinRotorForce");
-        }
-
-        GetControl("MaxRotorDelta")?.SetInteractable(drone.CurrentFluentRotor != null);
-        if (drone.CurrentFluentRotor != null) ApplyOverride(drone.CurrentFluentRotor, ref drone.CurrentFluentRotor.maxRotorDelta, maxRotorDeltaOverride, "MaxRotorDelta");
-
-        GetControl("RotorRadius")?.SetInteractable(drone.CurrentGroundEffect != null);
-        if (drone.CurrentGroundEffect != null) ApplyOverride(drone.CurrentGroundEffect, ref drone.CurrentGroundEffect.rotorRadius, rotorRadiusOverride, "RotorRadius");
     }
 
     #region Helper Methods
-    private void ApplyOverride<T>(T component, ref float componentField, float? overrideValue, string controlName)
-    {
-        float value = overrideValue.HasValue ? overrideValue.Value : componentField;
-        componentField = value;
-        GetControl(controlName)?.SetValue(value);
-    }
-    
     private void SetupMultiStrategyControl<T>(TMP_Dropdown dropdown, List<T> presets, T currentPreset, Action<T> setter) where T : ScriptableObject {
         if (dropdown == null) return;
         dropdown.ClearOptions();
@@ -203,38 +192,11 @@ public class DroneUIController : MonoBehaviour {
         });
     }
 
-    private ParameterControl GetControl(string name) {
-        controlDict.TryGetValue(name, out var control);
-        if (control == null) Debug.LogWarning($"ParameterControl named '{name}' not found in the dictionary.");
-        return control;
-    }
-
-    private void SetGroupInteractable(string groupName, bool isInteractable) {
-        foreach (var control in controlDict.Values.Where(c => c.name.StartsWith(groupName))) {
-            control.SetInteractable(isInteractable);
-        }
-    }
-    
     private void SetupLinkedToggle(Toggle toggle, bool initialValue, Action<bool> setter)
     {
         if (toggle == null) return;
         toggle.isOn = initialValue;
         toggle.onValueChanged.AddListener(x => setter(x));
-    }
-    #endregion
-
-    #region Special Accessors
-    private float GetMaxTiltAngle()
-    {
-        var s = drone.CurrentTargetModifier as StabilizationSupportModifier; if (s != null) return s.maxTiltAngle;
-        var d = drone.CurrentTargetModifier as DefaultTargetModifier; if (d != null) return d.maxTiltAngle;
-        return 0;
-    }
-
-    private void SetMaxTiltAngle(float value)
-    {
-        var s = drone.CurrentTargetModifier as StabilizationSupportModifier; if (s != null) s.maxTiltAngle = value;
-        var d = drone.CurrentTargetModifier as DefaultTargetModifier; if (d != null) d.maxTiltAngle = value;
     }
     #endregion
 }

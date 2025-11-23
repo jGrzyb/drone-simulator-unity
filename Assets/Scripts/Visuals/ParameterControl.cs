@@ -29,6 +29,7 @@ public class ParameterControl : MonoBehaviour
         
         SetValue(currentValue);
 
+        OnValueChanged.RemoveAllListeners();
         OnValueChanged.AddListener(value => setter(value));
         isInitialized = true;
     }

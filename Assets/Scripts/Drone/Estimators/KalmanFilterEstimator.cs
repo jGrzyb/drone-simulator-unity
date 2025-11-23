@@ -66,6 +66,11 @@ public class KalmanFilterEstimator : TiltEstimator
         pitchFilter = new Kalman(q_angle, q_rate, r_angle, r_rate);
     }
 
+    public override void ResetState()
+    {
+        Initialize(null);
+    }
+
     public override void Estimate(Drone drone)
     {
         Vector3 localAngularVelocity = drone.transform.InverseTransformDirection(drone.Rb.angularVelocity);

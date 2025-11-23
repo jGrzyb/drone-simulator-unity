@@ -10,4 +10,6 @@ public abstract class TiltEstimator : ScriptableObject
     public abstract void Initialize(Drone drone);
 
     public abstract void Estimate(Drone drone);
+
+    public virtual void ResetState() { }
 }

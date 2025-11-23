@@ -14,4 +14,6 @@ public class FluentRotorSmoother : ScriptableObject
         }
         return drone.RotorForcesArray;
     }
+
+    public void ResetState() { }
 }

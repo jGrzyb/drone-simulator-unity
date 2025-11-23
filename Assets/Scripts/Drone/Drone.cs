@@ -245,7 +245,13 @@ public class Drone : MonoBehaviour
     
     public void ResetState()
     {
-        InitializeModifiers();
+        CurrentTiltEstimator?.ResetState();
+        CurrentTargetModifier?.ResetState();
+        CurrentRotorForceCalculator?.ResetState();
+        CurrentFluentRotor?.ResetState();
+        CurrentGroundEffect?.ResetState();
+        CurrentVelocityThrustInfluence?.ResetState();
+
         System.Array.Clear(RotorForcesArray, 0, RotorForcesArray.Length);
     }
 

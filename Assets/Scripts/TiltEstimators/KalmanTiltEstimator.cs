@@ -6,77 +6,9 @@ using Accord.Statistics.Distributions.Univariate;
 
 using Vector3 = UnityEngine.Vector3;
 
-public class Kalman {
-    public double[] x;
-    private double[,] P;
-    private double[,] Q;
-    private double[,] H;
-    private double[,] R;
-    private double[,] I;
 
-    public Kalman(double qAngle, double qBias, double rAngle, double rRate) {
-
-        x = new double[] { 0, 0 };
-
-        P = new double[,] {
-            { 1000, 0 },
-            { 0, 1000 }
-        };
-
-        Q = new double[,] {
-            { qAngle, 0 },
-            { 0, qBias }
-        };
-
-        H = new double[,] {
-            { 1, 0 }
-        };
-
-        R = new double[,] {
-            { rAngle, 0 },
-            { 0, rRate }
-        };
-
-        I = Matrix.Identity(2);
-    }
-
-    public void Update(double angleAcc, double gyroRate, float dt) {
-        double[] xPred = { x[0] + dt * (gyroRate - x[1]), x[1] };
-
-        double[,] F = new double[,]
-        {
-            { 1, -dt },
-            { 0, 1 }
-        };
-
-        double[,] pPred =
-            Matrix.Dot(Matrix.Dot(F, P), F.Transpose()).Add(Q);
-
-        double[,] S = Matrix.Dot(Matrix.Dot(H, pPred), H.Transpose()).Add(R);
-
-        double[,] K = Matrix.Dot(Matrix.Dot(pPred, H.Transpose()), S.Inverse());
-
-        double z = angleAcc;
-        double[] y = { z - xPred[0] };
-
-        x = xPred.Add(Matrix.Dot(K, y));
-
-        P = Matrix.Dot(I.Subtract(Matrix.Dot(K, H)), pPred);
-    }
-
-    public double GetAngle() => x[0];
-    public double GetBias() => x[1];
-
-
-    public double GetRate(double gyroRate) {
-        return gyroRate - x[1];
-    }
-}
-
-
-
-[RequireComponent(typeof(Rigidbody))]
-public class KalmanFilter : MonoBehaviour {
+[CreateAssetMenu(fileName = "Kalman Tilt Estimator", menuName = "Drone/Tilt Estimators/Kalman Tilt Estimator")]
+public class KalmanTiltEstimator : ITiltEstimator {
     [SerializeField] private float accelerometerNoise = 0.1f;
     [SerializeField] private float gyroscopeNoise = 0.1f;
     [SerializeField] private float qAngle = 0.001f;
@@ -86,7 +18,6 @@ public class KalmanFilter : MonoBehaviour {
     [SerializeField] private float gyroBiasDrift = 0.1f;
     [SerializeField] private float gyroInitialBias = 0.2f;
 
-    private Rigidbody rb;
 
     private Kalman rollFilter;
     private Kalman pitchFilter;
@@ -99,17 +30,16 @@ public class KalmanFilter : MonoBehaviour {
     private float noisyAccRoll;
     private float noisyAccPitch;
 
-    void Start() {
-        rb = GetComponent<Rigidbody>();
 
+    public override void Initialize(Drone drone)
+    {
+        base.Initialize(drone);
         rollFilter = new Kalman(qAngle, qRate, rAngle, rRate);
         pitchFilter = new Kalman(qAngle, qRate, rAngle, rRate);
         rollBias = gyroInitialBias;
-        pitchBias = gyroInitialBias;
     }
 
-    void FixedUpdate() {
-
+    public override void UpdateFilter() {
         rollBias += Random.Range(-gyroBiasDrift, gyroBiasDrift) * Time.fixedDeltaTime;
         pitchBias += Random.Range(-gyroBiasDrift, gyroBiasDrift) * Time.fixedDeltaTime;
 
@@ -133,19 +63,19 @@ public class KalmanFilter : MonoBehaviour {
         pitchFilter.Update(noisyAccPitch, noisyPitchRate, Time.fixedDeltaTime);
     }
 
-    public float GetRollAngle() {
+    public override float GetRollAngle() {
         return (float)rollFilter.GetAngle() * Mathf.Rad2Deg;
     }
 
-    public float GetPitchAngle() {
+    public override float GetPitchAngle() {
         return (float)pitchFilter.GetAngle() * Mathf.Rad2Deg;
     }
 
-    public float GetRollRate() {
+    public override float GetRollRate() {
         return (float)rollFilter.GetRate(noisyRollRate) * Mathf.Rad2Deg;
     }
 
-    public float GetPitchRate() {
+    public override float GetPitchRate() {
         return (float)pitchFilter.GetRate(noisyPitchRate) * Mathf.Rad2Deg;
     }
 

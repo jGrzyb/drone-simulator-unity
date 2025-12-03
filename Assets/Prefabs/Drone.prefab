@@ -488,6 +488,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Drone
   tiltEstimatorPrefab: {fileID: 11400000, guid: 5d77d651fadce7a7ca2e00a1d46db213, type: 2}
+  targetModifierPrefab: {fileID: 11400000, guid: f7d03ceeffdf6a50da04d5725df3ce06, type: 2}
   maxTiltAngle: 30
   tiltGain: 5
   tiltDamping: 1

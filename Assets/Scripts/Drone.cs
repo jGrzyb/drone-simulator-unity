@@ -6,12 +6,15 @@ using Accord.Math.Optimization;
 
 using Vector3 = UnityEngine.Vector3;
 using System;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerInput))]
 public class Drone : MonoBehaviour {
     [SerializeField] public ITiltEstimator tiltEstimatorPrefab;
+    [SerializeField] public ITargetModifier targetModifierPrefab;
     private ITiltEstimator tiltEstimator;
+    private ITargetModifier targetModifier;
 
     [SerializeField] private float maxTiltAngle = 30f;
     [SerializeField] private float tiltGain = 5f;
@@ -61,7 +64,6 @@ public class Drone : MonoBehaviour {
     private float currentYawVelocity { get { return transform.InverseTransformDirection(rb.angularVelocity).y * Mathf.Deg2Rad; } }
     private float currentVerticalVelocity { get { return rb.linearVelocity.y; } }
 
-    private Vector3 localLinearVelocity { get { return Quaternion.Inverse(Quaternion.Euler(0, transform.eulerAngles.y, 0)) * rb.linearVelocity; } }
     private float rollRate { get { return -tiltEstimator.GetRollRate() * Mathf.Deg2Rad; } }
     private float pitchRate { get { return tiltEstimator.GetPitchRate() * Mathf.Deg2Rad; } }
 
@@ -82,8 +84,8 @@ public class Drone : MonoBehaviour {
 
     private float[] rotorForcesArray = new float[4];
 
-    private Vector2 leftJoystick;
-    private Vector2 rightJoystick;
+    public Vector2 leftJoystick { get; private set; }
+    public Vector2 rightJoystick { get; private set; }
 
     private Rigidbody rb;
     private LineRenderer[] rotorLines;
@@ -92,6 +94,8 @@ public class Drone : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         tiltEstimator = Instantiate(tiltEstimatorPrefab);
         tiltEstimator.Initialize(this);
+        targetModifier = Instantiate(targetModifierPrefab);
+        targetModifier.Initialize(this);
         rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
@@ -106,19 +110,9 @@ public class Drone : MonoBehaviour {
             {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
         };
 
-        float desiredRoll;
-        float desiredPitch;
-
-        if (isSupportOn && rightJoystick.magnitude < 0.1f) {
-            float desiredRightVelocity = -localLinearVelocity.x;
-            float desiredForwardVelocity = -localLinearVelocity.z;
-
-            desiredRoll = Mathf.Atan(-desiredRightVelocity * supportGain) / (Mathf.PI / 2) * maxTiltAngle * Mathf.Deg2Rad;
-            desiredPitch = Mathf.Atan(desiredForwardVelocity * supportGain) / (Mathf.PI / 2) * maxTiltAngle * Mathf.Deg2Rad;
-        } else {
-            desiredRoll = -rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad;
-            desiredPitch = rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad;
-        }
+        DesiredTilt desiredTilt = targetModifier.GetDesiredTilt();
+        float desiredRoll = desiredTilt.desiredRoll;
+        float desiredPitch = desiredTilt.desiredPitch;
 
         float desiredYawVelocity = leftJoystick.x * maxYawRate * Mathf.Deg2Rad;
         float desiredVerticalVelocity = leftJoystick.y * maxVerticalVelocity;

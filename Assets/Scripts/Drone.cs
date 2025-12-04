@@ -9,7 +9,6 @@ using System;
 using Unity.VisualScripting;
 
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(PlayerInput))]
 public class Drone : MonoBehaviour {
     [SerializeField] public ITiltEstimator tiltEstimatorPrefab;
     [SerializeField] public ITargetModifier targetModifierPrefab;
@@ -92,8 +91,8 @@ public class Drone : MonoBehaviour {
 
     private float[] rotorForcesArray = new float[4];
 
-    public Vector2 leftJoystick { get; private set; }
-    public Vector2 rightJoystick { get; private set; }
+    private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
+    private Vector2 rightJoystick { get { return InputManager.I.rightJoystick; } }
 
     private Rigidbody rb;
     private LineRenderer[] rotorLines;
@@ -155,14 +154,6 @@ public class Drone : MonoBehaviour {
             rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
             rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
-    }
-
-    public void Move(InputAction.CallbackContext context) {
-        leftJoystick = context.ReadValue<Vector2>();
-    }
-
-    public void Look(InputAction.CallbackContext context) {
-        rightJoystick = context.ReadValue<Vector2>();
     }
 
     void Update() {

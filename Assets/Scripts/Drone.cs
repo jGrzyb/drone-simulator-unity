@@ -102,10 +102,14 @@ public class Drone : MonoBehaviour {
 
         fluentRotorsComponent = Instantiate(fluentRotorsComponent);
         fluentRotorsComponent.Initialize();
-        UIManager.I.onFluentSelected.AddListener(() => fluentRotors = fluentRotorsComponent);
-        UIManager.I.onRapidSelected.AddListener(() => fluentRotors = null);
+        UIManager.I.onFluentOn.AddListener(() => fluentRotors = fluentRotorsComponent);
+        UIManager.I.onFluentOff.AddListener(() => fluentRotors = null);
 
-        groundEffect = groundEffectComponent;
+        groundEffectComponent = Instantiate(groundEffectComponent);
+        groundEffectComponent.Initialize();
+        UIManager.I.onGroundOn.AddListener(() => groundEffect = groundEffectComponent);
+        UIManager.I.onGroundOff.AddListener(() => groundEffect = null);
+        
         // velocityDependent = velocityDependentComponent;
     }
 

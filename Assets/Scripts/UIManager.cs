@@ -32,10 +32,13 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] Toggle fluentToggle;
     [SerializeField] public FieldSlider maxStepSizeSlider;
-    [HideInInspector] public UnityEvent onFluentSelected = new UnityEvent();
-    [HideInInspector] public UnityEvent onRapidSelected = new UnityEvent();
-    private Dictionary<string, UnityEvent> fluentEvents;
+    [HideInInspector] public UnityEvent onFluentOn = new UnityEvent();
+    [HideInInspector] public UnityEvent onFluentOff = new UnityEvent();
 
+    [SerializeField] Toggle groundEffectToggle;
+    [SerializeField] public FieldSlider rotorRadiusSlider;
+    [HideInInspector] public UnityEvent onGroundOn = new UnityEvent();
+    [HideInInspector] public UnityEvent onGroundOff = new UnityEvent();
 
 
     void Awake()
@@ -78,6 +81,7 @@ public class UIManager : MonoBehaviour
         controlAllocatorDropdown.onValueChanged.AddListener(OnControlAllocatorDropdownChanged);
 
         fluentToggle.onValueChanged.AddListener(OnFluentToggleChanged);
+        groundEffectToggle.onValueChanged.AddListener(OnGroundEffectToggleChanged);
     }
 
     void Start()
@@ -86,6 +90,7 @@ public class UIManager : MonoBehaviour
         OnTargetModifierDropdownChanged(targetModifierDropdown.value);
         OnControlAllocatorDropdownChanged(controlAllocatorDropdown.value);
         OnFluentToggleChanged(fluentToggle.isOn);
+        OnGroundEffectToggleChanged(groundEffectToggle.isOn);
     }
 
     private void OnTiltEstimatorDropdownChanged(int index)
@@ -106,10 +111,20 @@ public class UIManager : MonoBehaviour
     private void OnFluentToggleChanged(bool isOn)
     {
         if (isOn) {
-            onFluentSelected.Invoke();
+            onFluentOn.Invoke();
         }
         else {
-            onRapidSelected.Invoke();
+            onFluentOff.Invoke();
+        }
+    }
+
+    private void OnGroundEffectToggleChanged(bool isOn)
+    {
+        if (isOn) {
+            onGroundOn.Invoke();
+        }
+        else {
+            onGroundOff.Invoke();
         }
     }
 }

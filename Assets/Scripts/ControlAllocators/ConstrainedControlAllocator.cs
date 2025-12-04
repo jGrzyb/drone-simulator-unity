@@ -8,6 +8,12 @@ using UnityEngine;
 public class ConstrainedControlAllocator : IControlAllocator {
     [SerializeField] public float minRotorForce = 0.0f;
     [SerializeField] private float maxRotorForce = 10.0f;
+
+    public ConstrainedControlAllocator() : base() {
+        UIManager.I.minRotorValueSlider.onValueChanged.AddListener(value => minRotorForce = value);
+        UIManager.I.maxRotorValueSlider.onValueChanged.AddListener(value => maxRotorForce = value);
+    }
+
     public override float[] Allocate(float upwardForce, float rollControl, float pitchControl, float yawControl, double[,] controlToRotorMatrix)
     {
         upwardForce = Mathf.Clamp(upwardForce, 4 * minRotorForce, 4 * maxRotorForce);

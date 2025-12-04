@@ -93,8 +93,12 @@ public class Drone : MonoBehaviour {
         UIManager.I.onSupportTargetSelected.AddListener(() => targetModifier = supportTargetModifierComponent);
         UIManager.I.onTiltTargetSelected.AddListener(() => targetModifier = tiltTargetModifierComponent);
 
+        constrainedControlAllocatorComponent = Instantiate(constrainedControlAllocatorComponent);
+        unconstrainedControlAllocatorComponent = Instantiate(unconstrainedControlAllocatorComponent);
+        UIManager.I.onConstrainedSelected.AddListener(() => controlAllocator = constrainedControlAllocatorComponent);
+        UIManager.I.onUnconstrainedSelected.AddListener(() => controlAllocator = unconstrainedControlAllocatorComponent);
 
-        controlAllocator = constrainedControlAllocatorComponent;
+
         // fluentRotors = fluentRotorsComponent;
         groundEffect = groundEffectComponent;
         // velocityDependent = velocityDependentComponent;

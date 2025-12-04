@@ -22,6 +22,13 @@ public class UIManager : MonoBehaviour
     [HideInInspector] public UnityEvent onTiltTargetSelected = new UnityEvent();
     private Dictionary<string, UnityEvent> targetModifierEvents;
 
+    [SerializeField] TMP_Dropdown controlAllocatorDropdown;
+    [SerializeField] public FieldSlider minRotorValueSlider;
+    [SerializeField] public FieldSlider maxRotorValueSlider;
+    [HideInInspector] public UnityEvent onConstrainedSelected = new UnityEvent();
+    [HideInInspector] public UnityEvent onUnconstrainedSelected = new UnityEvent();
+    private Dictionary<string, UnityEvent> controlAllocatorEvents;
+
 
 
     void Awake()
@@ -53,12 +60,22 @@ public class UIManager : MonoBehaviour
         targetModifierDropdown.ClearOptions();
         targetModifierDropdown.AddOptions(targetModifierEvents.Keys.ToList());
         targetModifierDropdown.onValueChanged.AddListener(OnTargetModifierDropdownChanged);
+
+        controlAllocatorEvents = new Dictionary<string, UnityEvent>
+        {
+            { "ConstrainedControlAllocator", onConstrainedSelected },
+            { "UnconstrainedControlAllocator", onUnconstrainedSelected }
+        };
+        controlAllocatorDropdown.ClearOptions();
+        controlAllocatorDropdown.AddOptions(controlAllocatorEvents.Keys.ToList());
+        controlAllocatorDropdown.onValueChanged.AddListener(OnControlAllocatorDropdownChanged);
     }
 
     void Start()
     {
         OnTiltEstimatorDropdownChanged(tiltEstimatorDropdown.value);
         OnTargetModifierDropdownChanged(targetModifierDropdown.value);
+        OnControlAllocatorDropdownChanged(controlAllocatorDropdown.value);
     }
 
     private void OnTiltEstimatorDropdownChanged(int index)
@@ -69,5 +86,10 @@ public class UIManager : MonoBehaviour
     private void OnTargetModifierDropdownChanged(int index)
     {
         targetModifierEvents[targetModifierDropdown.options[index].text]?.Invoke();
+    }
+
+    private void OnControlAllocatorDropdownChanged(int index)
+    {
+        controlAllocatorEvents[controlAllocatorDropdown.options[index].text]?.Invoke();
     }
 }

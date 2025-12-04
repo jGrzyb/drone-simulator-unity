@@ -4,6 +4,11 @@ using UnityEngine;
 public class FluentRotors : ScriptableObject
 {
     [SerializeField] public float maxRotorDelta = 0.5f;
+
+    public void Initialize() {
+        UIManager.I.maxStepSizeSlider.onValueChanged.AddListener((value) => maxRotorDelta = value);
+    }
+
     public float[] GetModifiedRotorForces(float[] currentRotorForces, float[] targetRotorForces)
     {
         for (int i = 0; i < 4; i++) {

@@ -9,7 +9,8 @@ public class ConstrainedControlAllocator : IControlAllocator {
     [SerializeField] public float minRotorForce = 0.0f;
     [SerializeField] private float maxRotorForce = 10.0f;
 
-    public ConstrainedControlAllocator() : base() {
+    public override void Initialize() {
+        base.Initialize();
         UIManager.I.minRotorValueSlider.onValueChanged.AddListener(value => minRotorForce = value);
         UIManager.I.maxRotorValueSlider.onValueChanged.AddListener(value => maxRotorForce = value);
     }

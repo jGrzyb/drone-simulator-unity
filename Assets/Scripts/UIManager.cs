@@ -3,6 +3,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -28,6 +29,12 @@ public class UIManager : MonoBehaviour
     [HideInInspector] public UnityEvent onConstrainedSelected = new UnityEvent();
     [HideInInspector] public UnityEvent onUnconstrainedSelected = new UnityEvent();
     private Dictionary<string, UnityEvent> controlAllocatorEvents;
+
+    [SerializeField] Toggle fluentToggle;
+    [SerializeField] public FieldSlider maxStepSizeSlider;
+    [HideInInspector] public UnityEvent onFluentSelected = new UnityEvent();
+    [HideInInspector] public UnityEvent onRapidSelected = new UnityEvent();
+    private Dictionary<string, UnityEvent> fluentEvents;
 
 
 
@@ -69,6 +76,8 @@ public class UIManager : MonoBehaviour
         controlAllocatorDropdown.ClearOptions();
         controlAllocatorDropdown.AddOptions(controlAllocatorEvents.Keys.ToList());
         controlAllocatorDropdown.onValueChanged.AddListener(OnControlAllocatorDropdownChanged);
+
+        fluentToggle.onValueChanged.AddListener(OnFluentToggleChanged);
     }
 
     void Start()
@@ -76,6 +85,7 @@ public class UIManager : MonoBehaviour
         OnTiltEstimatorDropdownChanged(tiltEstimatorDropdown.value);
         OnTargetModifierDropdownChanged(targetModifierDropdown.value);
         OnControlAllocatorDropdownChanged(controlAllocatorDropdown.value);
+        OnFluentToggleChanged(fluentToggle.isOn);
     }
 
     private void OnTiltEstimatorDropdownChanged(int index)
@@ -91,5 +101,15 @@ public class UIManager : MonoBehaviour
     private void OnControlAllocatorDropdownChanged(int index)
     {
         controlAllocatorEvents[controlAllocatorDropdown.options[index].text]?.Invoke();
+    }
+
+    private void OnFluentToggleChanged(bool isOn)
+    {
+        if (isOn) {
+            onFluentSelected.Invoke();
+        }
+        else {
+            onRapidSelected.Invoke();
+        }
     }
 }

@@ -14,9 +14,11 @@ public class Drone : MonoBehaviour {
     [SerializeField] public ITiltEstimator tiltEstimatorPrefab;
     [SerializeField] public ITargetModifier targetModifierPrefab;
     [SerializeField] public IControlAllocator controlAllocatorPrefab;
+    [SerializeField] public FluentRotors fluentRotorsPrefab;
     private ITiltEstimator tiltEstimator;
     private ITargetModifier targetModifier;
     private IControlAllocator controlAllocator;
+    private FluentRotors fluentRotors;
 
     [SerializeField] private float maxTiltAngle = 30f;
     [SerializeField] private float tiltGain = 5f;
@@ -99,6 +101,7 @@ public class Drone : MonoBehaviour {
         targetModifier = Instantiate(targetModifierPrefab);
         targetModifier.Initialize(this);
         controlAllocator = Instantiate(controlAllocatorPrefab);
+        fluentRotors = Instantiate(fluentRotorsPrefab);
         rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
@@ -134,13 +137,7 @@ public class Drone : MonoBehaviour {
             controlToRotorMatrix
         );
 
-        if (isFluentRotor) {
-            for (int i = 0; i < 4; i++) {
-                rotorForcesArray[i] = Mathf.MoveTowards(rotorForcesArray[i], solution[i], maxRotorDelta);
-            }
-        } else {
-            rotorForcesArray = solution;
-        }
+        fluentRotors?.ModifyRotorForces(ref rotorForcesArray, solution);
 
         float[] trueRotorForces = rotorForcesArray.Clone() as float[];
         if (isGroudEffectOn) {

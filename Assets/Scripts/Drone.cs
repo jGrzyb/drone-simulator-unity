@@ -109,8 +109,10 @@ public class Drone : MonoBehaviour {
         groundEffectComponent.Initialize();
         UIManager.I.onGroundOn.AddListener(() => groundEffect = groundEffectComponent);
         UIManager.I.onGroundOff.AddListener(() => groundEffect = null);
-        
-        // velocityDependent = velocityDependentComponent;
+
+        velocityDependentComponent = Instantiate(velocityDependentComponent);
+        UIManager.I.onVelDependentOn.AddListener(() => velocityDependent = velocityDependentComponent);
+        UIManager.I.onVelDependentOff.AddListener(() => velocityDependent = null);
     }
 
     void Start() {

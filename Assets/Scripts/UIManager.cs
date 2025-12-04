@@ -40,6 +40,9 @@ public class UIManager : MonoBehaviour
     [HideInInspector] public UnityEvent onGroundOn = new UnityEvent();
     [HideInInspector] public UnityEvent onGroundOff = new UnityEvent();
 
+    [SerializeField] Toggle velocityDependentToggle;
+    [HideInInspector] public UnityEvent onVelDependentOn = new UnityEvent();
+    [HideInInspector] public UnityEvent onVelDependentOff = new UnityEvent();
 
     void Awake()
     {
@@ -82,6 +85,7 @@ public class UIManager : MonoBehaviour
 
         fluentToggle.onValueChanged.AddListener(OnFluentToggleChanged);
         groundEffectToggle.onValueChanged.AddListener(OnGroundEffectToggleChanged);
+        velocityDependentToggle.onValueChanged.AddListener(OnVelocityDependentToggleChanged);
     }
 
     void Start()
@@ -91,6 +95,7 @@ public class UIManager : MonoBehaviour
         OnControlAllocatorDropdownChanged(controlAllocatorDropdown.value);
         OnFluentToggleChanged(fluentToggle.isOn);
         OnGroundEffectToggleChanged(groundEffectToggle.isOn);
+        OnVelocityDependentToggleChanged(velocityDependentToggle.isOn);
     }
 
     private void OnTiltEstimatorDropdownChanged(int index)
@@ -125,6 +130,16 @@ public class UIManager : MonoBehaviour
         }
         else {
             onGroundOff.Invoke();
+        }
+    }
+
+    private void OnVelocityDependentToggleChanged(bool isOn)
+    {
+        if (isOn) {
+            onVelDependentOn.Invoke();
+        }
+        else {
+            onVelDependentOff.Invoke();
         }
     }
 }

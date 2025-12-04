@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "FluentRotors", menuName = "Drone/Fluent Rotors")]
+[CreateAssetMenu(fileName = "Fluent Rotors", menuName = "Drone/Fluent Rotors")]
 public class FluentRotors : ScriptableObject
 {
     [SerializeField] public float maxRotorDelta = 0.5f;

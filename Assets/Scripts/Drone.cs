@@ -15,10 +15,12 @@ public class Drone : MonoBehaviour {
     [SerializeField] public ITargetModifier targetModifierPrefab;
     [SerializeField] public IControlAllocator controlAllocatorPrefab;
     [SerializeField] public FluentRotors fluentRotorsPrefab;
+    [SerializeField] public GroundEffect groundEffectPrefab;
     private ITiltEstimator tiltEstimator;
     private ITargetModifier targetModifier;
     private IControlAllocator controlAllocator;
     private FluentRotors fluentRotors;
+    private GroundEffect groundEffect;
 
     [SerializeField] private float maxTiltAngle = 30f;
     [SerializeField] private float tiltGain = 5f;
@@ -102,6 +104,7 @@ public class Drone : MonoBehaviour {
         targetModifier.Initialize(this);
         controlAllocator = Instantiate(controlAllocatorPrefab);
         fluentRotors = Instantiate(fluentRotorsPrefab);
+        groundEffect = Instantiate(groundEffectPrefab);
         rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
@@ -138,13 +141,10 @@ public class Drone : MonoBehaviour {
         );
 
         fluentRotors?.ModifyRotorForces(ref rotorForcesArray, solution);
+        
+        float[] appliedRotorForces = (float[])rotorForcesArray.Clone();
+        groundEffect?.ModifyAppliedForces(ref appliedRotorForces, transform.position);
 
-        float[] trueRotorForces = rotorForcesArray.Clone() as float[];
-        if (isGroudEffectOn) {
-            for (int i = 0; i < 4; i++) {
-                trueRotorForces[i] *= 1f + 6f * Mathf.Exp(-Mathf.Max(transform.position.y, 0) * 5f / rotorRadius);
-            }
-        }
 
         if (doesVelocityInfluenceThrust) {
             for (int i = 0; i < 4; i++) {
@@ -152,16 +152,16 @@ public class Drone : MonoBehaviour {
                 Vector3 lpv = transform.InverseTransformDirection(pv);
                 // Debug.Log($"Rotor {i} local vertical velocity: {lpv}");
                 float rotorLocalVerticalVelocity = lpv.y;
-                trueRotorForces[i] *= 1f - rotorLocalVerticalVelocity / Mathf.Max(Mathf.Sqrt(Mathf.Abs(trueRotorForces[i])), 0.1f);
+                appliedRotorForces[i] *= 1f - rotorLocalVerticalVelocity / Mathf.Max(Mathf.Sqrt(Mathf.Abs(appliedRotorForces[i])), 0.1f);
                 Debug.DrawLine(transform.TransformPoint(rotorPoses[i]), transform.TransformPoint(rotorPoses[i]) + pv, Color.red);
             }
         }
 
         for (int i = 0; i < 4; i++) {
             float randomNoise = 1; // UnityEngine.Random.Range(0.9f, 1.1f);
-            rb.AddForceAtPosition(transform.up * trueRotorForces[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
-            rb.AddForceAtPosition(transform.forward * trueRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
-            rb.AddForceAtPosition(-transform.forward * trueRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(transform.up * appliedRotorForces[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
+            rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
     }
 

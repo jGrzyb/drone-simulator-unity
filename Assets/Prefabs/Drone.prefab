@@ -490,6 +490,8 @@ MonoBehaviour:
   tiltEstimatorPrefab: {fileID: 11400000, guid: 5d77d651fadce7a7ca2e00a1d46db213, type: 2}
   targetModifierPrefab: {fileID: 11400000, guid: 49b4fe8e568d946099943dd7ac039ae6, type: 2}
   controlAllocatorPrefab: {fileID: 11400000, guid: 2e345a150b8eba281a90a31531897c01, type: 2}
+  fluentRotorsPrefab: {fileID: 11400000, guid: e573f967dcd0a1e339a50d813096f13b, type: 2}
+  groundEffectPrefab: {fileID: 11400000, guid: f6f4528135a208e41825a5f156976e15, type: 2}
   maxTiltAngle: 30
   tiltGain: 5
   tiltDamping: 1

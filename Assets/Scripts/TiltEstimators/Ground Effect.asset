@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 809e9551b38e2a97d8e10e588bc9d321, type: 3}
-  m_Name: FluentRotors
-  m_EditorClassIdentifier: Assembly-CSharp::FluentRotors
-  maxRotorDelta: 0.5
+  m_Script: {fileID: 11500000, guid: e5626f8cb4ceb76afba9ae326ea1ccdd, type: 3}
+  m_Name: Ground Effect
+  m_EditorClassIdentifier: Assembly-CSharp::GroundEffect
+  rotorRadius: 0.2

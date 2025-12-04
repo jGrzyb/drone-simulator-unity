@@ -1,12 +1,8 @@
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Accord.Math;
-using Accord.Math.Optimization;
 
 using Vector3 = UnityEngine.Vector3;
-using System;
-using Unity.VisualScripting;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Drone : MonoBehaviour {
@@ -17,47 +13,25 @@ public class Drone : MonoBehaviour {
     [SerializeField] public GroundEffect groundEffect;
     [SerializeField] public VelocityDependent velocityDependent;
 
-    [SerializeField] private float maxTiltAngle = 30f;
-    [SerializeField] private float tiltGain = 5f;
-    [SerializeField] private float tiltDamping = 1f;
+    [SerializeField] public float tiltGain = 5f;
+    [SerializeField] public float tiltDamping = 1f;
 
     [Space]
-    [SerializeField] private float maxYawRate = 2f;
-    [SerializeField] private float yawGain = 5f;
+    [SerializeField] public float maxYawRate = 2f;
+    [SerializeField] public float yawGain = 5f;
 
     [Space]
-    [SerializeField] private float maxVerticalVelocity = 5f;
-    [SerializeField] private float verticalGain = 1f;
+    [SerializeField] public float maxVerticalVelocity = 5f;
+    [SerializeField] public float verticalGain = 1f;
 
     [Space]
-    [SerializeField] private float thrustMultiplier = 1f;
-    [SerializeField] private float dragMultiplier = 1f;
-    [SerializeField] private float airResistanceCoefficient = 1f;
+    [SerializeField] public float thrustMultiplier = 1f;
+    [SerializeField] public float dragMultiplier = 1f;
+    [SerializeField] public float airResistanceCoefficient = 0.02f;
 
     [Space]
-    [SerializeField] private float rotorDistance = 0.5f;
-    [SerializeField] private bool isRotorInFront = true;
-
-    [Space]
-    [SerializeField] private bool isRotorContrained = true;
-    [SerializeField] private float maxRotorForce = 10.0f;
-
-    [Space]
-    [SerializeField] private bool isFluentRotor = true;
-    [SerializeField] private float maxRotorDelta = 0.5f;
-
-    [Space]
-    [SerializeField] private bool isSupportOn = true;
-    [SerializeField] private float supportGain = 0.5f;
-
-    [Space]
-    [SerializeField] private bool isGroudEffectOn = true;
-    [SerializeField] private float rotorRadius = 0.2f;
-
-    [Space]
-    [SerializeField] private bool doesVelocityInfluenceThrust = false;
-    [Space]
-    [SerializeField] private LineRenderer rotorLinePrefab;
+    [SerializeField] public float rotorDistance = 0.5f;
+    [SerializeField] public bool isRotorInFront = true;
 
 
     private float currentRoll { get { return -tiltEstimator.GetRollAngle() * Mathf.Deg2Rad; } }
@@ -68,9 +42,11 @@ public class Drone : MonoBehaviour {
     private float rollRate { get { return -tiltEstimator.GetRollRate() * Mathf.Deg2Rad; } }
     private float pitchRate { get { return tiltEstimator.GetPitchRate() * Mathf.Deg2Rad; } }
 
-    private float mass { get { return rb?.mass ?? 0f; } }
+    private float mass { get { return rb.mass; } }
 
-    private Vector3[] rotorPoses {
+    private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
+
+    public Vector3[] rotorPoses {
         get {
             float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
             return Enumerable.Range(0, 4).Select(i =>
@@ -83,25 +59,20 @@ public class Drone : MonoBehaviour {
         }
     }
 
-    private float[] rotorForcesArray = new float[4];
-
-    private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
-    private Vector2 rightJoystick { get { return InputManager.I.rightJoystick; } }
 
     private Rigidbody rb;
-    private LineRenderer[] rotorLines;
+    public float[] rotorForcesArray { get; private set; } = new float[4];
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
         tiltEstimator.Initialize(this);
         targetModifier.Initialize(this);
         rb.linearDamping = 0f;
-        rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
 
     void FixedUpdate() {
         tiltEstimator.UpdateFilter();
-        rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient * Time.fixedDeltaTime);
+        rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient );
         double[,] controlToRotorMatrix = new double[4, 4] {
             {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
             {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
@@ -141,13 +112,6 @@ public class Drone : MonoBehaviour {
             rb.AddForceAtPosition(transform.up * appliedRotorForces[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
             rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
             rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
-        }
-    }
-
-    void Update() {
-        for (int i = 0; i < 4; i++) {
-            rotorLines[i].SetPosition(0, transform.TransformPoint(rotorPoses[i]));
-            rotorLines[i].SetPosition(1, transform.TransformPoint(rotorPoses[i] + Vector3.up * rotorForcesArray[i] * 5f));
         }
     }
 }

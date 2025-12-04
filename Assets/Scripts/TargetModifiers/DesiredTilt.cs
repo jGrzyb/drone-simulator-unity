@@ -8,4 +8,9 @@ public struct DesiredTilt
         desiredRoll = roll;
         desiredPitch = pitch;
     }
+
+    public static DesiredTilt operator *(DesiredTilt tilt, float multiplier)
+    {
+        return new DesiredTilt(tilt.desiredRoll * multiplier, tilt.desiredPitch * multiplier);
+    }
 }

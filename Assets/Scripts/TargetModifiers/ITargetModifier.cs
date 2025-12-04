@@ -2,8 +2,6 @@ using UnityEngine;
 
 public abstract class ITargetModifier : ScriptableObject
 {
-    public float maxTiltAngle = 30f;
-    public float supportGain = 0.5f;
     protected Transform transform;
     protected Rigidbody rb;
     

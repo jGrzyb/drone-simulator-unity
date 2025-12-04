@@ -13,6 +13,7 @@ public class Drone : MonoBehaviour {
     [SerializeField] public GroundEffect groundEffect;
     [SerializeField] public VelocityDependent velocityDependent;
 
+    [SerializeField] public float maxTiltAngle = 30f;
     [SerializeField] public float tiltGain = 5f;
     [SerializeField] public float tiltDamping = 1f;
 
@@ -80,7 +81,7 @@ public class Drone : MonoBehaviour {
             {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
         };
 
-        DesiredTilt desiredTilt = targetModifier.GetDesiredTilt();
+        DesiredTilt desiredTilt = targetModifier.GetDesiredTilt() * maxTiltAngle * Mathf.Deg2Rad;
         float desiredRoll = desiredTilt.desiredRoll;
         float desiredPitch = desiredTilt.desiredPitch;
 

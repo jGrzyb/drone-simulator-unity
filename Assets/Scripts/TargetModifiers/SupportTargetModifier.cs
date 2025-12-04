@@ -2,6 +2,7 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "Support Target Modifier", menuName = "Drone/Target Modifiers/Support Target Modifier")]
 public class SupportTargetModifier : ITargetModifier {
+    [SerializeField] public float supportGain = 0.5f;
     public override DesiredTilt GetDesiredTilt()
     {
         float desiredRoll;
@@ -11,11 +12,11 @@ public class SupportTargetModifier : ITargetModifier {
             float desiredRightVelocity = -localVelocity.x;
             float desiredForwardVelocity = -localVelocity.z;
 
-            desiredRoll = Mathf.Atan(-desiredRightVelocity * supportGain) / (Mathf.PI / 2) * maxTiltAngle * Mathf.Deg2Rad;
-            desiredPitch = Mathf.Atan(desiredForwardVelocity * supportGain) / (Mathf.PI / 2) * maxTiltAngle * Mathf.Deg2Rad;
+            desiredRoll = Mathf.Atan(-desiredRightVelocity * supportGain) / (Mathf.PI / 2);
+            desiredPitch = Mathf.Atan(desiredForwardVelocity * supportGain) / (Mathf.PI / 2);
         } else {
-            desiredRoll = -InputManager.I.rightJoystick.x * maxTiltAngle * Mathf.Deg2Rad;
-            desiredPitch = InputManager.I.rightJoystick.y * maxTiltAngle * Mathf.Deg2Rad;
+            desiredRoll = -InputManager.I.rightJoystick.x;
+            desiredPitch = InputManager.I.rightJoystick.y;
         }
         return new DesiredTilt(desiredRoll, desiredPitch);
     }

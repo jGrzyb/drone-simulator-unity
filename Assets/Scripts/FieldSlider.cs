@@ -49,4 +49,9 @@ public class FieldSlider : MonoBehaviour
         slider.value = value;
         inputField.text = value.ToString("F4");
     }
+
+    public float GetInitialValue()
+    {
+        return initialValue;
+    }
 }

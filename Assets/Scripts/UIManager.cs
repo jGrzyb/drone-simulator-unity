@@ -9,6 +9,17 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager I { get; private set; }
 
+    [SerializeField] public FieldSlider maxTiltAngleSlider;
+    [SerializeField] public FieldSlider tiltGainSlider;
+    [SerializeField] public FieldSlider tiltDampingSlider;
+    [SerializeField] public FieldSlider maxYawRateSlider;
+    [SerializeField] public FieldSlider yawGainSlider;
+    [SerializeField] public FieldSlider maxVerticalVelocitySlider;
+    [SerializeField] public FieldSlider verticalGainSlider;
+    [SerializeField] public FieldSlider airResistanceSlider;
+    [SerializeField] public FieldSlider rotorDistanceSlider;
+    [SerializeField] public Toggle isRotorInFrontToggle;
+
     [SerializeField] TMP_Dropdown tiltEstimatorDropdown;
     [SerializeField] public FieldSlider accelerometerNoiseSlider;
     [SerializeField] public FieldSlider gyroscopeNoiseSlider;
@@ -90,6 +101,15 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
+        maxTiltAngleSlider.onValueChanged.Invoke(maxTiltAngleSlider.GetInitialValue());
+        tiltGainSlider.onValueChanged.Invoke(tiltGainSlider.GetInitialValue());
+        tiltDampingSlider.onValueChanged.Invoke(tiltDampingSlider.GetInitialValue());
+        maxYawRateSlider.onValueChanged.Invoke(maxYawRateSlider.GetInitialValue());
+        yawGainSlider.onValueChanged.Invoke(yawGainSlider.GetInitialValue());
+        airResistanceSlider.onValueChanged.Invoke(airResistanceSlider.GetInitialValue());
+        rotorDistanceSlider.onValueChanged.Invoke(rotorDistanceSlider.GetInitialValue());
+        isRotorInFrontToggle.onValueChanged.Invoke(isRotorInFrontToggle.isOn);
+
         OnTiltEstimatorDropdownChanged(tiltEstimatorDropdown.value);
         OnTargetModifierDropdownChanged(targetModifierDropdown.value);
         OnControlAllocatorDropdownChanged(controlAllocatorDropdown.value);

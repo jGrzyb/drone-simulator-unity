@@ -79,6 +79,17 @@ public class Drone : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0f;
 
+        UIManager.I.maxTiltAngleSlider.onValueChanged.AddListener(value => maxTiltAngle = value);
+        UIManager.I.tiltGainSlider.onValueChanged.AddListener(value => tiltGain = value);
+        UIManager.I.tiltDampingSlider.onValueChanged.AddListener(value => tiltDamping = value);
+        UIManager.I.maxYawRateSlider.onValueChanged.AddListener(value => maxYawRate = value);
+        UIManager.I.yawGainSlider.onValueChanged.AddListener(value => yawGain = value);
+        UIManager.I.maxVerticalVelocitySlider.onValueChanged.AddListener(value => maxVerticalVelocity = value);
+        UIManager.I.verticalGainSlider.onValueChanged.AddListener(value => verticalGain = value);
+        UIManager.I.airResistanceSlider.onValueChanged.AddListener(value => airResistanceCoefficient = value);
+        UIManager.I.rotorDistanceSlider.onValueChanged.AddListener(value => rotorDistance = value);
+        UIManager.I.isRotorInFrontToggle.onValueChanged.AddListener(value => isRotorInFront = value);
+
         kalmanTiltEstimatorComponent = Instantiate(kalmanTiltEstimatorComponent);
         kalmanTiltEstimatorComponent.Initialize(this);
         transformTiltEstimatorComponent = Instantiate(transformTiltEstimatorComponent);

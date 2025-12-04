@@ -57,6 +57,7 @@ public class Drone : MonoBehaviour {
     private float mass { get { return rb.mass; } }
 
     private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
+    private Vector3 initialPosition;
 
     public Vector3[] rotorPoses {
         get {
@@ -76,6 +77,7 @@ public class Drone : MonoBehaviour {
     public float[] rotorForcesArray { get; private set; } = new float[4];
 
     void Awake() {
+        initialPosition = transform.position;
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0f;
 
@@ -173,5 +175,26 @@ public class Drone : MonoBehaviour {
             rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
             rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
+    }
+
+    public void ResetDronePosition() {
+        StartCoroutine(ResetDronePositionCoroutine());
+    }
+
+    private System.Collections.IEnumerator ResetDronePositionCoroutine() {
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        rb.isKinematic = true;
+
+        yield return new WaitForFixedUpdate();
+
+        transform.position = initialPosition;
+        transform.rotation = Quaternion.identity;
+
+        yield return new WaitForFixedUpdate();
+        
+        rb.isKinematic = false;
+        rb.WakeUp();
     }
 }

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -28,5 +29,24 @@ public class InputManager : MonoBehaviour
 
     public void GetRightStick(InputAction.CallbackContext context) {
         rightJoystick = context.ReadValue<Vector2>();
+    }
+
+    public void GetCameraSwitch(InputAction.CallbackContext context) {
+        if (context.performed) {
+            CameraRotate.I.SwitchCameraMode();
+        }
+    }
+
+    public void GetReset(InputAction.CallbackContext context) {
+        if (context.performed) {
+            FindObjectsByType<Drone>(FindObjectsSortMode.None).ToList().ForEach(drone => drone.ResetDronePosition());
+            CameraRotate.I.ResetCameraPosition();
+        }
+    }
+
+    public void GetUIShowHide(InputAction.CallbackContext context) {
+        if (context.performed) {
+            UIManager.I.ToggleUIVisibility();
+        }
     }
 }

@@ -162,4 +162,9 @@ public class UIManager : MonoBehaviour
             onVelDependentOff.Invoke();
         }
     }
+
+    public void ToggleUIVisibility()
+    {
+        gameObject.SetActive(!gameObject.activeSelf);
+    }
 }

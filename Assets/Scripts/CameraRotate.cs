@@ -1,15 +1,27 @@
 using UnityEngine;
 
 public class CameraRotate : MonoBehaviour {
+    public static CameraRotate I { get; private set; }
     [SerializeField] private Drone drone;
     [SerializeField] public float cameraSpeed = 2f;
     [SerializeField] public float minDistance = 3f;
     [SerializeField] public CameraMode cameraMode = CameraMode.Follow;
 
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
+
     void Awake() {
+        if (I == null) {
+            I = this;
+            DontDestroyOnLoad(gameObject);
+        } else {
+            Destroy(gameObject);
+        }
         if (drone == null) {
             drone = FindFirstObjectByType<Drone>();
         }
+        initialPosition = transform.position;
+        initialRotation = transform.rotation;
     }
 
     void LateUpdate() {
@@ -27,6 +39,10 @@ public class CameraRotate : MonoBehaviour {
                 fpvView();
                 break;
         }
+    }
+
+    public void SwitchCameraMode() {
+        cameraMode = (CameraMode)(((int)cameraMode + 1) % System.Enum.GetNames(typeof(CameraMode)).Length);
     }
 
     public enum CameraMode {
@@ -56,5 +72,10 @@ public class CameraRotate : MonoBehaviour {
     private void fpvView() {
         transform.position = drone.transform.position + drone.transform.forward * 0.6f;
         transform.rotation = drone.transform.rotation;
+    }
+
+    public void ResetCameraPosition() {
+        transform.position = initialPosition;
+        transform.rotation = initialRotation;
     }
 }

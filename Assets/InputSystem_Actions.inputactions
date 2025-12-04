@@ -7,7 +7,7 @@
             "id": "df70fa95-8a34-4494-b137-73ab6b9c7d37",
             "actions": [
                 {
-                    "name": "Move",
+                    "name": "RightStick",
                     "type": "Value",
                     "id": "351f2ccd-1f9f-44bf-9bec-d62ac5c5f408",
                     "expectedControlType": "Vector2",
@@ -16,13 +16,40 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Look",
+                    "name": "LeftStick",
                     "type": "Value",
                     "id": "6b444451-8a00-4d00-a97e-f47457f736a8",
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "SwitchCam",
+                    "type": "Button",
+                    "id": "60c20451-2cc1-4b09-94cc-4f3916d79b9c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Reset",
+                    "type": "Button",
+                    "id": "c937f608-c1e7-4b19-af00-173f038a203f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "UIView",
+                    "type": "Button",
+                    "id": "709f0d42-1123-4319-b729-7e547c619e95",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -33,7 +60,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -44,7 +71,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -55,7 +82,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -66,7 +93,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -77,7 +104,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -88,7 +115,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -99,7 +126,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -110,7 +137,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Move",
+                    "action": "RightStick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -121,7 +148,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -132,7 +159,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -143,7 +170,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -154,7 +181,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -165,7 +192,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -176,7 +203,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -187,7 +214,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -198,7 +225,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -209,7 +236,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -220,7 +247,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -231,9 +258,75 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Look",
+                    "action": "LeftStick",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "6d584987-c39a-421d-8cd1-7d42d274ecf1",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchCam",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6654420d-7c5a-4d7b-a6a3-ffca6eb048d3",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwitchCam",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9d6cfe64-6eb9-4749-a780-55e582b82b4e",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reset",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9d13f48a-080b-4683-8047-e723a83dc0d6",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reset",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "42732fb0-dc79-4801-b353-6213e1520fb5",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UIView",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "478f9477-e1d2-417b-bb51-8bb9b5db14de",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "UIView",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },

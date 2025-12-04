@@ -13,8 +13,10 @@ using Unity.VisualScripting;
 public class Drone : MonoBehaviour {
     [SerializeField] public ITiltEstimator tiltEstimatorPrefab;
     [SerializeField] public ITargetModifier targetModifierPrefab;
+    [SerializeField] public IControlAllocator controlAllocatorPrefab;
     private ITiltEstimator tiltEstimator;
     private ITargetModifier targetModifier;
+    private IControlAllocator controlAllocator;
 
     [SerializeField] private float maxTiltAngle = 30f;
     [SerializeField] private float tiltGain = 5f;
@@ -96,6 +98,7 @@ public class Drone : MonoBehaviour {
         tiltEstimator.Initialize(this);
         targetModifier = Instantiate(targetModifierPrefab);
         targetModifier.Initialize(this);
+        controlAllocator = Instantiate(controlAllocatorPrefab);
         rb.linearDamping = 0f;
         rotorLines = Enumerable.Range(0, 4).Select(i => Instantiate(rotorLinePrefab, transform)).ToArray();
     }
@@ -123,34 +126,13 @@ public class Drone : MonoBehaviour {
         float upwardForce = (verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
 
 
-        float[] solution;
-        if (isRotorContrained) {
-            upwardForce = Mathf.Clamp(upwardForce, 0, 4 * maxRotorForce);
-            double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
-            double[,] H = Matrix.Dot(controlToRotorMatrix.Transpose(), controlToRotorMatrix).Multiply(2);
-            double[] f = Matrix.Dot(controlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);
-            QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, f);
-            var cons = new System.Collections.Generic.List<LinearConstraint>();
-            for (int i = 0; i < 4; i++) {
-                var coeff = new double[4]; coeff[i] = 1.0;
-                cons.Add(new LinearConstraint(4) {
-                    CombinedAs = coeff,
-                    ShouldBe = ConstraintType.GreaterThanOrEqualTo,
-                    Value = 0.0
-                });
-                cons.Add(new LinearConstraint(4) {
-                    CombinedAs = coeff,
-                    ShouldBe = ConstraintType.LesserThanOrEqualTo,
-                    Value = maxRotorForce
-                });
-            }
-            var solver = new GoldfarbIdnani(qof, cons.ToArray());
-            solver.Minimize();
-            solution = solver.Solution.Select(x => (float)x).ToArray();
-        } else {
-            double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
-            solution = Matrix.Solve(controlToRotorMatrix, controlInputArray).Select(x => (float)x).ToArray();
-        }
+        float[] solution = controlAllocator.Allocate(
+            upwardForce,
+            rollControl,
+            pitchControl,
+            yawControl,
+            controlToRotorMatrix
+        );
 
         if (isFluentRotor) {
             for (int i = 0; i < 4; i++) {

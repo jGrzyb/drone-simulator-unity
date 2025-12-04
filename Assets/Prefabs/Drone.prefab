@@ -385,12 +385,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bee5ed5d4c02bfd3b367d3452832852, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Drone
-  tiltEstimator: {fileID: 11400000, guid: 5d77d651fadce7a7ca2e00a1d46db213, type: 2}
-  targetModifier: {fileID: 11400000, guid: 49b4fe8e568d946099943dd7ac039ae6, type: 2}
-  controlAllocator: {fileID: 11400000, guid: 3a17c692a0b3b5a79bcae0ad0a957dbe, type: 2}
-  fluentRotors: {fileID: 0}
-  groundEffect: {fileID: 11400000, guid: f6f4528135a208e41825a5f156976e15, type: 2}
-  velocityDependent: {fileID: 0}
+  kalmanTiltEstimatorComponent: {fileID: 11400000, guid: 3354e85ca44c24359a4cf4462aa7baff, type: 2}
+  transformTiltEstimatorComponent: {fileID: 11400000, guid: 5d77d651fadce7a7ca2e00a1d46db213, type: 2}
+  supportTargetModifierComponent: {fileID: 11400000, guid: 49b4fe8e568d946099943dd7ac039ae6, type: 2}
+  tiltTargetModifierComponent: {fileID: 11400000, guid: f7d03ceeffdf6a50da04d5725df3ce06, type: 2}
+  constrainedControlAllocatorComponent: {fileID: 11400000, guid: 3a17c692a0b3b5a79bcae0ad0a957dbe, type: 2}
+  unconstrainedControlAllocatorComponent: {fileID: 11400000, guid: 2e345a150b8eba281a90a31531897c01, type: 2}
+  fluentRotorsComponent: {fileID: 11400000, guid: e573f967dcd0a1e339a50d813096f13b, type: 2}
+  groundEffectComponent: {fileID: 11400000, guid: f6f4528135a208e41825a5f156976e15, type: 2}
+  velocityDependentComponent: {fileID: 11400000, guid: f05d36cd1cc951fc1ba44a86af7a64ea, type: 2}
+  maxTiltAngle: 30
   tiltGain: 5
   tiltDamping: 1
   maxYawRate: 2

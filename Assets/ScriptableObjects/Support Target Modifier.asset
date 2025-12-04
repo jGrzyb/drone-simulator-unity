@@ -12,5 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9fcf6f30f6d7c498831b25a26b2973, type: 3}
   m_Name: Support Target Modifier
   m_EditorClassIdentifier: Assembly-CSharp::SupportTargetModifier
-  maxTiltAngle: 50
   supportGain: 0.5

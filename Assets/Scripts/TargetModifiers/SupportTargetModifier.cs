@@ -3,6 +3,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Support Target Modifier", menuName = "Drone/Target Modifiers/Support Target Modifier")]
 public class SupportTargetModifier : ITargetModifier {
     [SerializeField] public float supportGain = 0.5f;
+
+    public override void Initialize(Drone drone) {
+        base.Initialize(drone);
+        UIManager.I.supportGainSlider.onValueChanged.AddListener((value) => supportGain = value);
+    }
+    
     public override DesiredTilt GetDesiredTilt()
     {
         float desiredRoll;

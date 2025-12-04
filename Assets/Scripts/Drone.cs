@@ -3,15 +3,26 @@ using UnityEngine;
 using Accord.Math;
 
 using Vector3 = UnityEngine.Vector3;
+using System;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Drone : MonoBehaviour {
-    [SerializeField] public ITiltEstimator tiltEstimator;
-    [SerializeField] public ITargetModifier targetModifier;
-    [SerializeField] public IControlAllocator controlAllocator;
-    [SerializeField] public FluentRotors fluentRotors;
-    [SerializeField] public GroundEffect groundEffect;
-    [SerializeField] public VelocityDependent velocityDependent;
+    [SerializeField] private KalmanTiltEstimator kalmanTiltEstimatorComponent;
+    [SerializeField] private TransformTiltEstimator transformTiltEstimatorComponent;
+    [SerializeField] private SupportTargetModifier supportTargetModifierComponent;
+    [SerializeField] private TiltTargetModifier tiltTargetModifierComponent;
+    [SerializeField] private ConstrainedControlAllocator constrainedControlAllocatorComponent;
+    [SerializeField] private UnconstrainedControlAllocator unconstrainedControlAllocatorComponent;
+    [SerializeField] private FluentRotors fluentRotorsComponent;
+    [SerializeField] private GroundEffect groundEffectComponent;
+    [SerializeField] private VelocityDependent velocityDependentComponent;
+
+    private ITiltEstimator tiltEstimator;
+    private ITargetModifier targetModifier;
+    private IControlAllocator controlAllocator;
+    private FluentRotors fluentRotors;
+    private GroundEffect groundEffect;
+    private VelocityDependent velocityDependent;
 
     [SerializeField] public float maxTiltAngle = 30f;
     [SerializeField] public float tiltGain = 5f;
@@ -66,9 +77,31 @@ public class Drone : MonoBehaviour {
 
     void Awake() {
         rb = GetComponent<Rigidbody>();
-        tiltEstimator.Initialize(this);
-        targetModifier.Initialize(this);
         rb.linearDamping = 0f;
+
+        kalmanTiltEstimatorComponent = Instantiate(kalmanTiltEstimatorComponent);
+        kalmanTiltEstimatorComponent.Initialize(this);
+        transformTiltEstimatorComponent = Instantiate(transformTiltEstimatorComponent);
+        transformTiltEstimatorComponent.Initialize(this);
+        UIManager.I.onKalmanSelected.AddListener(() => tiltEstimator = kalmanTiltEstimatorComponent);
+        UIManager.I.onTransformSelected.AddListener(() => tiltEstimator = transformTiltEstimatorComponent);
+
+        supportTargetModifierComponent = Instantiate(supportTargetModifierComponent);
+        supportTargetModifierComponent.Initialize(this);
+        tiltTargetModifierComponent = Instantiate(tiltTargetModifierComponent);
+        tiltTargetModifierComponent.Initialize(this);
+        UIManager.I.onSupportTargetSelected.AddListener(() => targetModifier = supportTargetModifierComponent);
+        UIManager.I.onTiltTargetSelected.AddListener(() => targetModifier = tiltTargetModifierComponent);
+
+
+        controlAllocator = constrainedControlAllocatorComponent;
+        // fluentRotors = fluentRotorsComponent;
+        groundEffect = groundEffectComponent;
+        // velocityDependent = velocityDependentComponent;
+    }
+
+    void Start() {
+        
     }
 
     void FixedUpdate() {

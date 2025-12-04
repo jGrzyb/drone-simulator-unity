@@ -1,8 +1,6 @@
 
 
 using UnityEngine;
-using Accord.Math;
-using Accord.Statistics.Distributions.Univariate;
 
 using Vector3 = UnityEngine.Vector3;
 
@@ -37,6 +35,10 @@ public class KalmanTiltEstimator : ITiltEstimator {
         rollFilter = new Kalman(qAngle, qRate, rAngle, rRate);
         pitchFilter = new Kalman(qAngle, qRate, rAngle, rRate);
         rollBias = gyroInitialBias;
+
+        UIManager.I.accelerometerNoiseSlider.onValueChanged.AddListener((value) => accelerometerNoise = value);
+        UIManager.I.gyroscopeNoiseSlider.onValueChanged.AddListener((value) => gyroscopeNoise = value);
+        UIManager.I.gyroBiasDriftSlider.onValueChanged.AddListener((value) => gyroBiasDrift = value);
     }
 
     public override void UpdateFilter() {
@@ -80,6 +82,6 @@ public class KalmanTiltEstimator : ITiltEstimator {
     }
 
     private float GetRandomNoise(float range) {
-        return Mathf.Clamp((float)new NormalDistribution(0, range / 3).Generate(), -range, range);
+        return Random.Range(-range, range);
     }
 }

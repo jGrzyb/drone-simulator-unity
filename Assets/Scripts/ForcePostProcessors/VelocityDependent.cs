@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "Velocity Dependent", menuName = "Drone/Velocity Dependent")]
 public class VelocityDependent : ScriptableObject
 {
     public void ModifyAppliedForces(ref float[] appliedRotorForces, Rigidbody rb, Transform transform, Vector3[] rotorPoses)

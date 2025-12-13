@@ -13,7 +13,6 @@ public class DroneRotorVisualizer : MonoBehaviour
     void Awake()
     {
         drone = GetComponent<Drone>();
-        InputManager.I.onDroneFeaturesVisibilityToggle.AddListener(() => MakeVisible(!isVisible));
     }
 
     void Start()
@@ -23,6 +22,7 @@ public class DroneRotorVisualizer : MonoBehaviour
         {
             rotorLines[i] = Instantiate(rotorLinePrefab, drone.transform);
         }
+        InputManager.I.onDroneFeaturesVisibilityToggle.AddListener(() => MakeVisible(!isVisible));
     }
 
     void Update()

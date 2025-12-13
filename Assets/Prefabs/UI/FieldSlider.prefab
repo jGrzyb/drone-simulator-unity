@@ -202,7 +202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -382,7 +382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TMP_InputField
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -872,6 +872,10 @@ MonoBehaviour:
   inputField: {fileID: 7114929553300511380}
   slider: {fileID: 8923035554436654255}
   label: {fileID: 8103751616847967984}
+  minValue: 0
+  maxValue: 1
+  initialValue: 0.5
+  labelText: Field Slider
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []

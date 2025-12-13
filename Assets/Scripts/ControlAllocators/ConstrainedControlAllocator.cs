@@ -21,8 +21,8 @@ public class ConstrainedControlAllocator : IControlAllocator {
         double[] controlInputArray = new double[] { upwardForce, rollControl, pitchControl, yawControl };
 
         double[,] H = Matrix.Dot(controlToRotorMatrix.Transpose(), controlToRotorMatrix).Multiply(2);
-        double[] f = Matrix.Dot(controlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);
-        QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, f);
+        double[] g = Matrix.Dot(controlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);
+        QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, g);
         var cons = new List<LinearConstraint>();
         for (int i = 0; i < 4; i++) {
             var coeff = new double[4]; coeff[i] = 1.0;

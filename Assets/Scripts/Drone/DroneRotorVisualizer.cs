@@ -8,10 +8,12 @@ public class DroneRotorVisualizer : MonoBehaviour
 
     private Drone drone;
     private LineRenderer[] rotorLines;
+    private bool isVisible = true;
 
     void Awake()
     {
         drone = GetComponent<Drone>();
+        InputManager.I.onDroneFeaturesVisibilityToggle.AddListener(() => MakeVisible(!isVisible));
     }
 
     void Start()
@@ -33,5 +35,15 @@ public class DroneRotorVisualizer : MonoBehaviour
             float thrust = drone.rotorForcesArray[i] * lineScale;
             rotorLines[i].SetPosition(1, worldPos + drone.transform.up * thrust * 0.1f);
         }
+    }
+
+    void MakeVisible(bool isVisible)
+    {
+        this.isVisible = isVisible;
+        foreach (var line in rotorLines)
+        {
+            line.enabled = isVisible;
+        }
+        GetComponent<TrailRenderer>().enabled = isVisible;
     }
 }

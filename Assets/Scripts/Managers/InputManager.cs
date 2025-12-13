@@ -9,6 +9,7 @@ public class InputManager : MonoBehaviour
     public static InputManager I { get; private set; }
     public Vector2 leftJoystick { get; private set; }
     public Vector2 rightJoystick { get; private set; }
+    public UnityEvent onDroneFeaturesVisibilityToggle = new UnityEvent();
 
     private void Awake()
     {
@@ -47,6 +48,18 @@ public class InputManager : MonoBehaviour
     public void GetUIShowHide(InputAction.CallbackContext context) {
         if (context.performed) {
             UIManager.I.ToggleUIVisibility();
+        }
+    }
+
+    public void GetPause(InputAction.CallbackContext context) {
+        if (context.performed) {
+            Time.timeScale = Time.timeScale == 0 ? 1 : 0;
+        }
+    }
+
+    public void GetDroneFeaturesVisibilityToggle(InputAction.CallbackContext context) {
+        if (context.performed) {
+            onDroneFeaturesVisibilityToggle.Invoke();
         }
     }
 }

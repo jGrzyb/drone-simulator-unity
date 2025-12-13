@@ -135,7 +135,7 @@ public class Drone : MonoBehaviour {
     void FixedUpdate() {
         tiltEstimator.UpdateFilter();
         rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient );
-        double[,] controlToRotorMatrix = new double[4, 4] {
+        double[,] rotorToTiltMatrix = new double[4, 4] {
             {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
             {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
             {-rotorPoses[0].z, -rotorPoses[1].z, -rotorPoses[2].z, -rotorPoses[3].z},
@@ -160,7 +160,7 @@ public class Drone : MonoBehaviour {
             rollControl,
             pitchControl,
             yawControl,
-            controlToRotorMatrix
+            rotorToTiltMatrix
         );
 
         rotorForcesArray = fluentRotors?.GetModifiedRotorForces(rotorForcesArray, solution) ?? solution;
@@ -170,10 +170,9 @@ public class Drone : MonoBehaviour {
         velocityDependent?.ModifyAppliedForces(ref appliedRotorForces, rb, transform, rotorPoses);
 
         for (int i = 0; i < 4; i++) {
-            float randomNoise = 1; // UnityEngine.Random.Range(0.9f, 1.1f);
-            rb.AddForceAtPosition(transform.up * appliedRotorForces[i] * randomNoise, transform.TransformPoint(rotorPoses[i]));
-            rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
-            rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * randomNoise * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(transform.up * appliedRotorForces[i], transform.TransformPoint(rotorPoses[i]));
+            rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
+            rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
         }
     }
 

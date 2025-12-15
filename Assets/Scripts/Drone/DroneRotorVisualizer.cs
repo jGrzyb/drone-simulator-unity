@@ -27,7 +27,7 @@ public class DroneRotorVisualizer : MonoBehaviour
 
     void Update()
     {
-        Vector3[] rotorPositions = drone.rotorPoses;
+        Vector3[] rotorPositions = drone.getRotorPoses();
         for (int i = 0; i < 4; i++)
         {
             Vector3 worldPos = drone.transform.TransformPoint(rotorPositions[i]);

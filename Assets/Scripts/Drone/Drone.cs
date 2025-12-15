@@ -59,17 +59,15 @@ public class Drone : MonoBehaviour {
     private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
     private Vector3 initialPosition;
 
-    public Vector3[] rotorPoses {
-        get {
-            float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
-            return Enumerable.Range(0, 4).Select(i =>
-                new Vector3(
-                    Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
-                    0f,
-                    Mathf.Sin(placementDegree + i * Mathf.PI / 2) * rotorDistance
-                )
-            ).ToArray();
-        }
+    public Vector3[] getRotorPoses() {
+        float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
+        return Enumerable.Range(0, 4).Select(i =>
+            new Vector3(
+                Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
+                0f,
+                Mathf.Sin(placementDegree + i * Mathf.PI / 2) * rotorDistance
+            )
+        ).ToArray();
     }
 
 
@@ -134,6 +132,7 @@ public class Drone : MonoBehaviour {
 
     void FixedUpdate() {
         tiltEstimator.UpdateFilter();
+        Vector3[] rotorPoses = getRotorPoses();
         rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient );
         double[,] rotorToTiltMatrix = new double[4, 4] {
             {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},

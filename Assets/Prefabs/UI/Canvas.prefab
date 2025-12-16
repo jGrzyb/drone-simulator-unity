@@ -251,6 +251,9 @@ MonoBehaviour:
   airResistanceSlider: {fileID: 8119730079908027373}
   rotorDistanceSlider: {fileID: 1526302602883159446}
   isRotorInFrontToggle: {fileID: 803304796286128815}
+  onRotorPosesChanged:
+    m_PersistentCalls:
+      m_Calls: []
   tiltEstimatorDropdown: {fileID: 3635608443058240802}
   accelerometerNoiseSlider: {fileID: 2801310068577609609}
   gyroscopeNoiseSlider: {fileID: 9157156186986690077}
@@ -2231,6 +2234,10 @@ PrefabInstance:
     - target: {fileID: 4985029919146067228, guid: ae10a63ddf68b6d7dbb8367079423b91, type: 3}
       propertyPath: maxValue
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4985029919146067228, guid: ae10a63ddf68b6d7dbb8367079423b91, type: 3}
+      propertyPath: minValue
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 4985029919146067228, guid: ae10a63ddf68b6d7dbb8367079423b91, type: 3}
       propertyPath: labelText

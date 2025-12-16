@@ -58,10 +58,11 @@ public class Drone : MonoBehaviour {
 
     private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
     private Vector3 initialPosition;
+    public Vector3[] rotorPoses;
 
-    public Vector3[] getRotorPoses() {
+    private void updateRotorPoses() {
         float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
-        return Enumerable.Range(0, 4).Select(i =>
+        rotorPoses = Enumerable.Range(0, 4).Select(i =>
             new Vector3(
                 Mathf.Cos(placementDegree + i * Mathf.PI / 2) * rotorDistance,
                 0f,
@@ -75,6 +76,7 @@ public class Drone : MonoBehaviour {
     public float[] rotorForcesArray { get; private set; } = new float[4];
 
     void Awake() {
+        updateRotorPoses();
         initialPosition = transform.position;
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0f;
@@ -87,8 +89,8 @@ public class Drone : MonoBehaviour {
         UIManager.I.maxVerticalVelocitySlider.onValueChanged.AddListener(value => maxVerticalVelocity = value);
         UIManager.I.verticalGainSlider.onValueChanged.AddListener(value => verticalGain = value);
         UIManager.I.airResistanceSlider.onValueChanged.AddListener(value => airResistanceCoefficient = value);
-        UIManager.I.rotorDistanceSlider.onValueChanged.AddListener(value => rotorDistance = value);
-        UIManager.I.isRotorInFrontToggle.onValueChanged.AddListener(value => isRotorInFront = value);
+        UIManager.I.rotorDistanceSlider.onValueChanged.AddListener(value => {rotorDistance = value; updateRotorPoses();});
+        UIManager.I.isRotorInFrontToggle.onValueChanged.AddListener(value => {isRotorInFront = value; updateRotorPoses();});
 
         kalmanTiltEstimatorComponent = Instantiate(kalmanTiltEstimatorComponent);
         kalmanTiltEstimatorComponent.Initialize(this);
@@ -132,7 +134,6 @@ public class Drone : MonoBehaviour {
 
     void FixedUpdate() {
         tiltEstimator.UpdateFilter();
-        Vector3[] rotorPoses = getRotorPoses();
         rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient );
         double[,] rotorToTiltMatrix = new double[4, 4] {
             {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},

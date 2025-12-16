@@ -8,11 +8,14 @@ using UnityEngine;
 public class ConstrainedControlAllocator : IControlAllocator {
     [SerializeField] public float minRotorForce = 0.0f;
     [SerializeField] private float maxRotorForce = 10.0f;
+    private LinearConstraintCollection linearConstraints;
 
     public override void Initialize() {
         base.Initialize();
-        UIManager.I.minRotorValueSlider.onValueChanged.AddListener(value => minRotorForce = value);
-        UIManager.I.maxRotorValueSlider.onValueChanged.AddListener(value => maxRotorForce = value);
+        updateConstraints();
+        UIManager.I.minRotorValueSlider.onValueChanged.AddListener(value => {minRotorForce = value; updateConstraints();});
+        UIManager.I.maxRotorValueSlider.onValueChanged.AddListener(value => {maxRotorForce = value; updateConstraints();});
+        
     }
 
     public override float[] Allocate(float upwardForce, float rollControl, float pitchControl, float yawControl, double[,] controlToRotorMatrix)
@@ -23,6 +26,13 @@ public class ConstrainedControlAllocator : IControlAllocator {
         double[,] H = Matrix.Dot(controlToRotorMatrix.Transpose(), controlToRotorMatrix).Multiply(2);
         double[] g = Matrix.Dot(controlToRotorMatrix.Transpose(), controlInputArray).Multiply(-2);
         QuadraticObjectiveFunction qof = new QuadraticObjectiveFunction(H, g);
+        
+        var solver = new GoldfarbIdnani(qof, linearConstraints);
+        solver.Minimize();
+        return solver.Solution.Select(x => (float)x).ToArray();
+    }
+
+    private void updateConstraints() {
         var cons = new List<LinearConstraint>();
         for (int i = 0; i < 4; i++) {
             var coeff = new double[4]; coeff[i] = 1.0;
@@ -37,8 +47,6 @@ public class ConstrainedControlAllocator : IControlAllocator {
                 Value = maxRotorForce
             });
         }
-        var solver = new GoldfarbIdnani(qof, cons.ToArray());
-        solver.Minimize();
-        return solver.Solution.Select(x => (float)x).ToArray();
+        linearConstraints = new LinearConstraintCollection(cons);
     }
 }

@@ -54,4 +54,9 @@ public class FieldSlider : MonoBehaviour
     {
         return initialValue;
     }
+
+    public float GetCurrentValue()
+    {
+        return slider.value;
+    }
 }

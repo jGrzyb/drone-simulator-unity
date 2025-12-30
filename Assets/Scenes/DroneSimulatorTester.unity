@@ -650,7 +650,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15d90d447f291bfe8a44ca7e073da9a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PerformanceMonitor
-  measurementDurationInFrames: 1000
+  measurementDurationInFrames: 128
+  measurementDurationInFixedFrames: 128
 --- !u!4 &1917657354
 Transform:
   m_ObjectHideFlags: 0

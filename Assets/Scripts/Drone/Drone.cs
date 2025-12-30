@@ -1,9 +1,9 @@
 using System.Linq;
 using UnityEngine;
 using Accord.Math;
+using Unity.Profiling;
 
 using Vector3 = UnityEngine.Vector3;
-using System;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Drone : MonoBehaviour {
@@ -75,6 +75,9 @@ public class Drone : MonoBehaviour {
     private Rigidbody rb;
     public float[] rotorForcesArray { get; private set; } = new float[4];
 
+    static readonly ProfilerMarker controlAlgorithmMarker =
+    new ProfilerMarker("DroneFixedUpdate");
+
     void Awake() {
         updateRotorPoses();
         initialPosition = transform.position;
@@ -133,46 +136,48 @@ public class Drone : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        tiltEstimator.UpdateFilter();
-        rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient );
-        double[,] rotorToTiltMatrix = new double[4, 4] {
-            {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
-            {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
-            {-rotorPoses[0].z, -rotorPoses[1].z, -rotorPoses[2].z, -rotorPoses[3].z},
-            {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
-        };
+        using (controlAlgorithmMarker.Auto()) {
+            tiltEstimator.UpdateFilter();
+            rb.AddForce(-rb.linearVelocity * rb.linearVelocity.magnitude * airResistanceCoefficient );
+            double[,] rotorToTiltMatrix = new double[4, 4] {
+                {thrustMultiplier, thrustMultiplier, thrustMultiplier, thrustMultiplier},
+                {rotorPoses[0].x, rotorPoses[1].x, rotorPoses[2].x, rotorPoses[3].x},
+                {-rotorPoses[0].z, -rotorPoses[1].z, -rotorPoses[2].z, -rotorPoses[3].z},
+                {dragMultiplier, -dragMultiplier, dragMultiplier, -dragMultiplier}
+            };
 
-        DesiredTilt desiredTilt = targetModifier.GetDesiredTilt() * maxTiltAngle * Mathf.Deg2Rad;
-        float desiredRoll = desiredTilt.desiredRoll;
-        float desiredPitch = desiredTilt.desiredPitch;
+            DesiredTilt desiredTilt = targetModifier.GetDesiredTilt() * maxTiltAngle * Mathf.Deg2Rad;
+            float desiredRoll = desiredTilt.desiredRoll;
+            float desiredPitch = desiredTilt.desiredPitch;
 
-        float desiredYawVelocity = leftJoystick.x * maxYawRate * Mathf.Deg2Rad;
-        float desiredVerticalVelocity = leftJoystick.y * maxVerticalVelocity;
+            float desiredYawVelocity = leftJoystick.x * maxYawRate * Mathf.Deg2Rad;
+            float desiredVerticalVelocity = leftJoystick.y * maxVerticalVelocity;
 
-        float rollControl = tiltGain * (desiredRoll - currentRoll) - tiltDamping * rollRate;
-        float pitchControl = tiltGain * (desiredPitch - currentPitch) - tiltDamping * pitchRate;
-        float yawControl = 40 * yawGain * (desiredYawVelocity - currentYawVelocity);
-        float upwardForce = (verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
+            float rollControl = tiltGain * (desiredRoll - currentRoll) - tiltDamping * rollRate;
+            float pitchControl = tiltGain * (desiredPitch - currentPitch) - tiltDamping * pitchRate;
+            float yawControl = 40 * yawGain * (desiredYawVelocity - currentYawVelocity);
+            float upwardForce = (verticalGain * (desiredVerticalVelocity - currentVerticalVelocity) + mass * Physics.gravity.magnitude) / Vector3.Dot(transform.up, Vector3.up);
 
 
-        float[] solution = controlAllocator.Allocate(
-            upwardForce,
-            rollControl,
-            pitchControl,
-            yawControl,
-            rotorToTiltMatrix
-        );
+            float[] solution = controlAllocator.Allocate(
+                upwardForce,
+                rollControl,
+                pitchControl,
+                yawControl,
+                rotorToTiltMatrix
+            );
 
-        rotorForcesArray = fluentRotors?.GetModifiedRotorForces(rotorForcesArray, solution) ?? solution;
+            rotorForcesArray = fluentRotors?.GetModifiedRotorForces(rotorForcesArray, solution) ?? solution;
 
-        float[] appliedRotorForces = (float[])rotorForcesArray.Clone();
-        groundEffect?.ModifyAppliedForces(ref appliedRotorForces, rotorPoses, transform);
-        velocityDependent?.ModifyAppliedForces(ref appliedRotorForces, rb, transform, rotorPoses);
+            float[] appliedRotorForces = (float[])rotorForcesArray.Clone();
+            groundEffect?.ModifyAppliedForces(ref appliedRotorForces, rotorPoses, transform);
+            velocityDependent?.ModifyAppliedForces(ref appliedRotorForces, rb, transform, rotorPoses);
 
-        for (int i = 0; i < 4; i++) {
-            rb.AddForceAtPosition(transform.up * appliedRotorForces[i], transform.TransformPoint(rotorPoses[i]));
-            rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
-            rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            for (int i = 0; i < 4; i++) {
+                rb.AddForceAtPosition(transform.up * appliedRotorForces[i], transform.TransformPoint(rotorPoses[i]));
+                rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
+                rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
+            }
         }
     }
 

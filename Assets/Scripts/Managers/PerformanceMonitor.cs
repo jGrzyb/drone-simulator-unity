@@ -6,10 +6,11 @@ using UnityEngine.Profiling;
 
 public class PerformanceMonitor : MonoBehaviour {
     [SerializeField]
-    private int measurementDurationInFrames = 1000;
+    private int measurementDurationInFrames = 128;
 
     private ProfilerRecorder mainThreadRecorder;
     private ProfilerRecorder gcAllocRecorder;
+    private ProfilerRecorder droneScriptRecorder;
 
     private int framesLeft = -1;
 
@@ -21,7 +22,8 @@ public class PerformanceMonitor : MonoBehaviour {
 
         framesLeft = measurementDurationInFrames;
         sb.Clear();
-        sb.AppendLine("Time,DeltaTime,MainThreadTime,GCAlloc,TotalMemory");
+        sb.AppendLine("Time,DeltaTime,MainThreadTime,GCAlloc,TotalMemory,DroneFixedUpdateTime");
+
         mainThreadRecorder = ProfilerRecorder.StartNew(
             ProfilerCategory.Internal,
             "Main Thread");
@@ -29,13 +31,17 @@ public class PerformanceMonitor : MonoBehaviour {
         gcAllocRecorder = ProfilerRecorder.StartNew(
             ProfilerCategory.Memory,
             "GC Allocated In Frame");
+
+        droneScriptRecorder = ProfilerRecorder.StartNew(
+            ProfilerCategory.Scripts,
+            "DroneFixedUpdate");
     }
 
     void Update() {
         framesLeft--;
         if (framesLeft > 0) {
             long ramBytes = Profiler.GetTotalAllocatedMemoryLong();
-            sb.AppendLine($"{Time.time},{Time.unscaledDeltaTime},{mainThreadRecorder.LastValue},{gcAllocRecorder.LastValue},{ramBytes}");
+            sb.AppendLine($"{Time.time},{Time.unscaledDeltaTime},{mainThreadRecorder.LastValue},{gcAllocRecorder.LastValue},{ramBytes},{droneScriptRecorder.LastValue}");
         } else if (framesLeft == 0) {
             int droneCount = FindObjectsByType<Drone>(FindObjectsSortMode.None).Length;
             string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
@@ -47,6 +53,7 @@ public class PerformanceMonitor : MonoBehaviour {
             File.WriteAllText(filePath, sb.ToString());
             mainThreadRecorder.Dispose();
             gcAllocRecorder.Dispose();
+            droneScriptRecorder.Dispose();
             Debug.Log($"Performance log saved to: {filePath}");
         }
     }

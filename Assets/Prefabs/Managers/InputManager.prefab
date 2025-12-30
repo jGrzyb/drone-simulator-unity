@@ -210,6 +210,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: b30b113d-cdc5-43ff-bcde-cc6612df8fc2
     m_ActionName: 'Player/visualToggle[/Gamepad/buttonWest,/Keyboard/v]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5014540987099518274}
+        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
+        m_MethodName: MeasurePerformance
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: f68be98f-d193-45ce-9409-9582d940c27e
+    m_ActionName: 'Player/MeasurePerformance[/Keyboard/m]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

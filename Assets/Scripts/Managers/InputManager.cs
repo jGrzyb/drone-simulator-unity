@@ -62,4 +62,10 @@ public class InputManager : MonoBehaviour
             onDroneFeaturesVisibilityToggle.Invoke();
         }
     }
+
+    public void MeasurePerformance(InputAction.CallbackContext context) {
+        if (context.performed) {
+            FindFirstObjectByType<PerformanceMonitor>()?.Measure();
+        }
+    }
 }

@@ -9,9 +9,13 @@ public class GroundEffect : ScriptableObject
         UIManager.I.rotorRadiusSlider.onValueChanged.AddListener(value => rotorRadius = value);
     }
 
-    public void ModifyAppliedForces(ref float[] appliedForces, Vector3 position) {
+    public void ModifyAppliedForces(ref float[] appliedForces, Vector3[] rotorPositions, Transform droneTransform) {
         for (int i = 0; i < 4; i++) {
-            appliedForces[i] *= 1f + 6f * Mathf.Exp(-Mathf.Max(position.y, 0) * 5f / rotorRadius);
+            bool isHit = Physics.Raycast(droneTransform.TransformPoint(rotorPositions[i]), -droneTransform.up, out RaycastHit hitInfo, Mathf.Infinity);
+            if (isHit) {
+                float height = hitInfo.distance;
+                appliedForces[i] *= 1f + 6f * Mathf.Exp(-Mathf.Max(height, 0) * 5f / rotorRadius);
+            }
         }
     }
 }

@@ -166,7 +166,7 @@ public class Drone : MonoBehaviour {
         rotorForcesArray = fluentRotors?.GetModifiedRotorForces(rotorForcesArray, solution) ?? solution;
 
         float[] appliedRotorForces = (float[])rotorForcesArray.Clone();
-        groundEffect?.ModifyAppliedForces(ref appliedRotorForces, transform.position);
+        groundEffect?.ModifyAppliedForces(ref appliedRotorForces, rotorPoses, transform);
         velocityDependent?.ModifyAppliedForces(ref appliedRotorForces, rb, transform, rotorPoses);
 
         for (int i = 0; i < 4; i++) {

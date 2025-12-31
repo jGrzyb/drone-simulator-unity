@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -55,6 +56,18 @@ public class UIManager : MonoBehaviour
     [HideInInspector] public UnityEvent onVelDependentOn = new UnityEvent();
     [HideInInspector] public UnityEvent onVelDependentOff = new UnityEvent();
 
+    [SerializeField] TMP_Dropdown environmentDropdown;
+    [SerializeField] public FieldSlider droneCountX;
+    [SerializeField] public FieldSlider droneCountY;
+    [SerializeField] public FieldSlider droneCountZ;
+
+    private readonly Dictionary<string, SimulationManager.SimulationEnv> envOptions = new()
+    {
+        { "Plane", SimulationManager.SimulationEnv.Plane },
+        { "City", SimulationManager.SimulationEnv.City },
+        { "Mountains", SimulationManager.SimulationEnv.Mountains }
+    };
+
     void Awake()
     {
         if (I == null)
@@ -94,20 +107,26 @@ public class UIManager : MonoBehaviour
         controlAllocatorDropdown.AddOptions(controlAllocatorEvents.Keys.ToList());
         controlAllocatorDropdown.onValueChanged.AddListener(OnControlAllocatorDropdownChanged);
 
+        environmentDropdown.ClearOptions();
+        environmentDropdown.AddOptions(envOptions.Keys.ToList());
+
         fluentToggle.onValueChanged.AddListener(OnFluentToggleChanged);
         groundEffectToggle.onValueChanged.AddListener(OnGroundEffectToggleChanged);
         velocityDependentToggle.onValueChanged.AddListener(OnVelocityDependentToggleChanged);
     }
 
-    void Start()
-    {
-        maxTiltAngleSlider.onValueChanged.Invoke(maxTiltAngleSlider.GetInitialValue());
-        tiltGainSlider.onValueChanged.Invoke(tiltGainSlider.GetInitialValue());
-        tiltDampingSlider.onValueChanged.Invoke(tiltDampingSlider.GetInitialValue());
-        maxYawRateSlider.onValueChanged.Invoke(maxYawRateSlider.GetInitialValue());
-        yawGainSlider.onValueChanged.Invoke(yawGainSlider.GetInitialValue());
-        airResistanceSlider.onValueChanged.Invoke(airResistanceSlider.GetInitialValue());
-        rotorDistanceSlider.onValueChanged.Invoke(rotorDistanceSlider.GetInitialValue());
+    void Start() {
+        RefreshAllParameters();
+    }
+
+    public void RefreshAllParameters() {
+        maxTiltAngleSlider.onValueChanged.Invoke(maxTiltAngleSlider.GetCurrentValue());
+        tiltGainSlider.onValueChanged.Invoke(tiltGainSlider.GetCurrentValue());
+        tiltDampingSlider.onValueChanged.Invoke(tiltDampingSlider.GetCurrentValue());
+        maxYawRateSlider.onValueChanged.Invoke(maxYawRateSlider.GetCurrentValue());
+        yawGainSlider.onValueChanged.Invoke(yawGainSlider.GetCurrentValue());
+        airResistanceSlider.onValueChanged.Invoke(airResistanceSlider.GetCurrentValue());
+        rotorDistanceSlider.onValueChanged.Invoke(rotorDistanceSlider.GetCurrentValue());
         isRotorInFrontToggle.onValueChanged.Invoke(isRotorInFrontToggle.isOn);
 
         OnTiltEstimatorDropdownChanged(tiltEstimatorDropdown.value);
@@ -116,6 +135,14 @@ public class UIManager : MonoBehaviour
         OnFluentToggleChanged(fluentToggle.isOn);
         OnGroundEffectToggleChanged(groundEffectToggle.isOn);
         OnVelocityDependentToggleChanged(velocityDependentToggle.isOn);
+    }
+
+    public void GetSimulationParameters(out int droneCountX, out int droneCountY, out int droneCountZ, out SimulationManager.SimulationEnv env)
+    {
+        droneCountX = (int)this.droneCountX.GetCurrentValue();
+        droneCountY = (int)this.droneCountY.GetCurrentValue();
+        droneCountZ = (int)this.droneCountZ.GetCurrentValue();
+        env = envOptions[environmentDropdown.options[environmentDropdown.value].text];
     }
 
     private void OnTiltEstimatorDropdownChanged(int index)

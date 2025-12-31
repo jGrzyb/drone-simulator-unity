@@ -34,14 +34,13 @@ public class InputManager : MonoBehaviour
 
     public void GetCameraSwitch(InputAction.CallbackContext context) {
         if (context.performed) {
-            CameraRotate.I.SwitchCameraMode();
+            CameraManager.I.SwitchCameraMode();
         }
     }
 
     public void GetReset(InputAction.CallbackContext context) {
         if (context.performed) {
-            FindObjectsByType<Drone>(FindObjectsSortMode.None).ToList().ForEach(drone => drone.ResetDronePosition());
-            CameraRotate.I.ResetCameraPosition();
+            FindFirstObjectByType<SimulationManager>()?.ResetSimulation();
         }
     }
 

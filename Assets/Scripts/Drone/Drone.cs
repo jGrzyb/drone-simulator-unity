@@ -129,6 +129,7 @@ public class Drone : MonoBehaviour {
         velocityDependentComponent = Instantiate(velocityDependentComponent);
         UIManager.I.onVelDependentOn.AddListener(() => velocityDependent = velocityDependentComponent);
         UIManager.I.onVelDependentOff.AddListener(() => velocityDependent = null);
+        UIManager.I.RefreshAllParameters();
     }
 
     void Start() {

@@ -1,7 +1,7 @@
 using UnityEngine;
 
-public class CameraRotate : MonoBehaviour {
-    public static CameraRotate I { get; private set; }
+public class CameraManager : MonoBehaviour {
+    public static CameraManager I { get; private set; }
     [SerializeField] private Drone drone;
     [SerializeField] public float cameraSpeed = 2f;
     [SerializeField] public float minDistance = 3f;
@@ -9,6 +9,8 @@ public class CameraRotate : MonoBehaviour {
 
     private Vector3 initialPosition;
     private Quaternion initialRotation;
+
+    private Vector3 dronePosition { get { return drone != null ? drone.transform.position : Vector3.zero; } }
 
     void Awake() {
         if (I == null) {
@@ -45,6 +47,10 @@ public class CameraRotate : MonoBehaviour {
         cameraMode = (CameraMode)(((int)cameraMode + 1) % System.Enum.GetNames(typeof(CameraMode)).Length);
     }
 
+    public void SetTarget(Drone drone) {
+        this.drone = drone;
+    }
+
     public enum CameraMode {
         Follow,
         Fixed,
@@ -53,25 +59,27 @@ public class CameraRotate : MonoBehaviour {
     }
 
     private void followView() {
-        Vector3 aboveDronePos = drone.transform.position + Vector3.up * 2f;
+        Vector3 aboveDronePos = dronePosition + Vector3.up * 2f;
         Vector3 targetToCamera = transform.position - aboveDronePos;
         Vector3 targetPosition = aboveDronePos + targetToCamera / targetToCamera.magnitude * minDistance;
         transform.position = Vector3.Lerp(transform.position, targetPosition, cameraSpeed * Time.deltaTime);
-        transform.LookAt(drone.transform);
+        transform.LookAt(dronePosition);
     }
 
     private void fixedView() {
-        transform.LookAt(drone.transform);
+        transform.LookAt(dronePosition);
     }
 
     private void groundView() {
         transform.position = new Vector3(0, 2, 0);
-        transform.LookAt(drone.transform);
+        transform.LookAt(dronePosition);
     }
 
     private void fpvView() {
-        transform.position = drone.transform.position + drone.transform.forward * 0.6f;
-        transform.rotation = drone.transform.rotation;
+        if (drone != null) {
+            transform.position = dronePosition + drone.transform.forward * 0.6f;
+            transform.rotation = drone.transform.rotation;
+        }
     }
 
     public void ResetCameraPosition() {

@@ -192,6 +192,7 @@ public class UIManager : MonoBehaviour
 
     public void ToggleUIVisibility()
     {
-        gameObject.SetActive(!gameObject.activeSelf);
+        Canvas canvas = GetComponent<Canvas>();
+        canvas.enabled = !canvas.enabled;
     }
 }

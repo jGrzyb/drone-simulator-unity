@@ -10,8 +10,8 @@ public class SimulationManager : MonoBehaviour
     readonly private Dictionary<SimulationEnv, string> envSceneNames = new()
     {
         { SimulationEnv.Plane, "Plane" },
-        { SimulationEnv.City, "Cube" },
-        { SimulationEnv.Mountains, "Sphere" }
+        { SimulationEnv.City, "City" },
+        { SimulationEnv.Mountains, "Mountains" }
     };
 
     private SimulationEnv currentEnv = SimulationEnv.Plane;

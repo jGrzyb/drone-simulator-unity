@@ -7,7 +7,7 @@ using Vector3 = UnityEngine.Vector3;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Drone : MonoBehaviour {
-    [SerializeField] private KalmanTiltEstimator kalmanTiltEstimatorComponent;
+    [SerializeField] public KalmanTiltEstimator kalmanTiltEstimatorComponent;
     [SerializeField] private TransformTiltEstimator transformTiltEstimatorComponent;
     [SerializeField] private SupportTargetModifier supportTargetModifierComponent;
     [SerializeField] private TiltTargetModifier tiltTargetModifierComponent;
@@ -46,19 +46,20 @@ public class Drone : MonoBehaviour {
     [SerializeField] public bool isRotorInFront = true;
 
 
-    private float currentRoll { get { return -tiltEstimator.GetRollAngle() * Mathf.Deg2Rad; } }
-    private float currentPitch { get { return tiltEstimator.GetPitchAngle() * Mathf.Deg2Rad; } }
+    public float currentRoll { get { return -tiltEstimator.GetRollAngle() * Mathf.Deg2Rad; } }
+    public float currentPitch { get { return tiltEstimator.GetPitchAngle() * Mathf.Deg2Rad; } }
     private float currentYawVelocity { get { return transform.InverseTransformDirection(rb.angularVelocity).y * Mathf.Deg2Rad; } }
     private float currentVerticalVelocity { get { return rb.linearVelocity.y; } }
 
-    private float rollRate { get { return -tiltEstimator.GetRollRate() * Mathf.Deg2Rad; } }
-    private float pitchRate { get { return tiltEstimator.GetPitchRate() * Mathf.Deg2Rad; } }
+    public float rollRate { get { return -tiltEstimator.GetRollRate() * Mathf.Deg2Rad; } }
+    public float pitchRate { get { return tiltEstimator.GetPitchRate() * Mathf.Deg2Rad; } }
 
     private float mass { get { return rb.mass; } }
 
     private Vector2 leftJoystick { get { return InputManager.I.leftJoystick; } }
     private Vector3 initialPosition;
     public Vector3[] rotorPoses;
+    private PerformanceMonitor performanceMonitor;
 
     private void updateRotorPoses() {
         float placementDegree = (isRotorInFront ? 0f : 45f) * Mathf.Deg2Rad;
@@ -79,11 +80,13 @@ public class Drone : MonoBehaviour {
     new ProfilerMarker("DroneFixedUpdate");
 
     void Awake() {
+        performanceMonitor = FindFirstObjectByType<PerformanceMonitor>();
         updateRotorPoses();
         initialPosition = transform.position;
         rb = GetComponent<Rigidbody>();
         rb.linearDamping = 0f;
 
+        UIManager.I.massSlider.onValueChanged.AddListener(value => rb.mass = value);
         UIManager.I.maxTiltAngleSlider.onValueChanged.AddListener(value => maxTiltAngle = value);
         UIManager.I.tiltGainSlider.onValueChanged.AddListener(value => tiltGain = value);
         UIManager.I.tiltDampingSlider.onValueChanged.AddListener(value => tiltDamping = value);
@@ -179,6 +182,7 @@ public class Drone : MonoBehaviour {
                 rb.AddForceAtPosition(transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] + new Vector3(0.1f, 0, 0)));
                 rb.AddForceAtPosition(-transform.forward * appliedRotorForces[i] * ((i % 2 * 2) - 1), transform.TransformPoint(rotorPoses[i] - new Vector3(0.1f, 0, 0)));
             }
+            performanceMonitor.FixedMesurement(this);
         }
     }
 

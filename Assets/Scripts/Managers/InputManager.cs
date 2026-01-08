@@ -64,7 +64,7 @@ public class InputManager : MonoBehaviour
 
     public void MeasurePerformance(InputAction.CallbackContext context) {
         if (context.performed) {
-            FindFirstObjectByType<PerformanceMonitor>()?.Measure();
+            FindFirstObjectByType<PerformanceMonitor>()?.HandleMesurement();
         }
     }
 }

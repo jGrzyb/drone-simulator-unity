@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager I { get; private set; }
 
+    [SerializeField] public FieldSlider massSlider;
     [SerializeField] public FieldSlider maxTiltAngleSlider;
     [SerializeField] public FieldSlider tiltGainSlider;
     [SerializeField] public FieldSlider tiltDampingSlider;
@@ -120,14 +121,30 @@ public class UIManager : MonoBehaviour
     }
 
     public void RefreshAllParameters() {
+        massSlider.onValueChanged.Invoke(massSlider.GetCurrentValue());
         maxTiltAngleSlider.onValueChanged.Invoke(maxTiltAngleSlider.GetCurrentValue());
         tiltGainSlider.onValueChanged.Invoke(tiltGainSlider.GetCurrentValue());
         tiltDampingSlider.onValueChanged.Invoke(tiltDampingSlider.GetCurrentValue());
         maxYawRateSlider.onValueChanged.Invoke(maxYawRateSlider.GetCurrentValue());
         yawGainSlider.onValueChanged.Invoke(yawGainSlider.GetCurrentValue());
+        maxVerticalVelocitySlider.onValueChanged.Invoke(maxVerticalVelocitySlider.GetCurrentValue());
+        verticalGainSlider.onValueChanged.Invoke(verticalGainSlider.GetCurrentValue());
         airResistanceSlider.onValueChanged.Invoke(airResistanceSlider.GetCurrentValue());
         rotorDistanceSlider.onValueChanged.Invoke(rotorDistanceSlider.GetCurrentValue());
         isRotorInFrontToggle.onValueChanged.Invoke(isRotorInFrontToggle.isOn);
+
+        accelerometerNoiseSlider.onValueChanged.Invoke(accelerometerNoiseSlider.GetCurrentValue());
+        gyroscopeNoiseSlider.onValueChanged.Invoke(gyroscopeNoiseSlider.GetCurrentValue());
+        gyroBiasDriftSlider.onValueChanged.Invoke(gyroBiasDriftSlider.GetCurrentValue());
+        
+        supportGainSlider.onValueChanged.Invoke(supportGainSlider.GetCurrentValue());
+        
+        minRotorValueSlider.onValueChanged.Invoke(minRotorValueSlider.GetCurrentValue());
+        maxRotorValueSlider.onValueChanged.Invoke(maxRotorValueSlider.GetCurrentValue());
+        
+        maxStepSizeSlider.onValueChanged.Invoke(maxStepSizeSlider.GetCurrentValue());
+        
+        rotorRadiusSlider.onValueChanged.Invoke(rotorRadiusSlider.GetCurrentValue());
 
         OnTiltEstimatorDropdownChanged(tiltEstimatorDropdown.value);
         OnTargetModifierDropdownChanged(targetModifierDropdown.value);

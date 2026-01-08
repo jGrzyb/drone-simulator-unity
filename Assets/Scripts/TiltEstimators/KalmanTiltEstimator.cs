@@ -20,13 +20,13 @@ public class KalmanTiltEstimator : ITiltEstimator {
     private Kalman rollFilter;
     private Kalman pitchFilter;
 
-    private float rollBias;
-    private float pitchBias;
+    public float rollBias { get; private set; }
+    public float pitchBias { get; private set; }
 
-    private float noisyRollRate;
-    private float noisyPitchRate;
-    private float noisyAccRoll;
-    private float noisyAccPitch;
+    public float noisyRollRate { get; private set; }
+    public float noisyPitchRate { get; private set; }
+    public float noisyAccRoll { get; private set; }
+    public float noisyAccPitch { get; private set; }
 
 
     public override void Initialize(Drone drone)
